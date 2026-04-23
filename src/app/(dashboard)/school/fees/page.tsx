@@ -17,16 +17,17 @@ import { useAuthStore } from '@/store/auth-store';
 import { FEE_TYPES, FEE_FREQUENCIES, ACADEMIC_YEARS, PAYMENT_STATUS_COLORS } from '@/lib/constants';
 import { formatCurrency } from '@/utils/format';
 import { useFeeStructures, useFeeInvoices, useCreateFeeStructure } from '@/hooks/use-fees';
+import { useDashboardStats } from '@/hooks/use-dashboard';
 
 export default function FeeManagementPage() {
   const { schoolId } = useAuthStore();
   const [createOpen, setCreateOpen] = useState(false);
   
+  const { data: dashboardData, isLoading: isDashboardLoading } = useDashboardStats(schoolId || 0);
   const { data: structuresData, isLoading: isLoadingStructures } = useFeeStructures(schoolId || 0, { page: 0, size: 50 });
   const { data: invoicesData, isLoading: isLoadingInvoices } = useFeeInvoices(schoolId || 0, { page: 0, size: 50 });
   
-  const createStructure = useCreateFeeStructure();
-  
+  const stats = dashboardData?.data;
   const structures = structuresData?.data?.content || [];
   const invoices = invoicesData?.data?.content || [];
 
@@ -98,9 +99,27 @@ export default function FeeManagementPage() {
       </PageHeader>
 
       <div className="stagger-children grid gap-4 sm:grid-cols-3">
-        <StatCard title="Total Collected" value={formatCurrency(1850000)} subtitle="This year" icon={DollarSign} iconClassName="bg-gradient-to-br from-emerald-500 to-teal-500" />
-        <StatCard title="Outstanding" value={formatCurrency(320000)} subtitle="Pending invoices" icon={FileText} iconClassName="bg-gradient-to-br from-amber-500 to-orange-500" />
-        <StatCard title="Fee Structures" value={structures.length} subtitle="Active" icon={BarChart3} iconClassName="bg-gradient-to-br from-violet-500 to-purple-500" />
+        <StatCard 
+          title="Monthly Collected" 
+          value={isDashboardLoading ? '...' : formatCurrency(stats?.monthlyCollection || 0)} 
+          subtitle="This month" 
+          icon={DollarSign} 
+          iconClassName="bg-gradient-to-br from-emerald-500 to-teal-500" 
+        />
+        <StatCard 
+          title="Monthly Pending" 
+          value={isDashboardLoading ? '...' : formatCurrency(stats?.monthlyPending || 0)} 
+          subtitle="Outstanding" 
+          icon={FileText} 
+          iconClassName="bg-gradient-to-br from-amber-500 to-orange-500" 
+        />
+        <StatCard 
+          title="Fee Structures" 
+          value={isLoadingStructures ? '...' : structures.length} 
+          subtitle="Active structures" 
+          icon={BarChart3} 
+          iconClassName="bg-gradient-to-br from-violet-500 to-purple-500" 
+        />
       </div>
 
       <Tabs defaultValue="structures">

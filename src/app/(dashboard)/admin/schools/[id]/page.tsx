@@ -113,7 +113,7 @@ export default function SchoolDetailsPage() {
         description={`School Code: ${school.code}`}
       />
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val || 'overview')}>
         <TabsList className="mb-4">
           <TabsTrigger value="overview"><Building className="mr-2 h-4 w-4" /> Overview</TabsTrigger>
           <TabsTrigger value="admins"><UserPlus className="mr-2 h-4 w-4" /> Administrators</TabsTrigger>

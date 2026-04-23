@@ -9,26 +9,16 @@ import { Badge } from '@/components/ui/badge';
 import { useAuthStore } from '@/store/auth-store';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useAnnouncements } from '@/hooks/use-communication';
+import { useDashboardStats } from '@/hooks/use-dashboard';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
 
-const feeData = [
-  { month: 'Jan', collected: 450000, pending: 85000 },
-  { month: 'Feb', collected: 520000, pending: 65000 },
-  { month: 'Mar', collected: 480000, pending: 90000 },
-  { month: 'Apr', collected: 610000, pending: 40000 },
-];
-
-const attendancePie = [
-  { name: 'Present', value: 85, color: '#10b981' },
-  { name: 'Absent', value: 8, color: '#ef4444' },
-  { name: 'Late', value: 5, color: '#f59e0b' },
-  { name: 'Leave', value: 2, color: '#8b5cf6' },
-];
-
 export default function SchoolDashboard() {
   const { fullName, schoolName, schoolId } = useAuthStore();
-  const { data: announcementsData, isLoading } = useAnnouncements(schoolId || 0, undefined, { page: 0, size: 5 });
+  const { data: dashboardData, isLoading: isDashboardLoading } = useDashboardStats(schoolId || 0);
+  const { data: announcementsData, isLoading: isAnnouncementsLoading } = useAnnouncements(schoolId || 0, undefined, { page: 0, size: 5 });
+  
+  const stats = dashboardData?.data;
   const announcements = announcementsData?.data?.content || [];
 
   return (
@@ -46,14 +36,38 @@ export default function SchoolDashboard() {
       </PageHeader>
 
       <div className="stagger-children grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard title="Total Students" value={856} subtitle="Class 1-12" icon={GraduationCap}
-          trend={{ value: 5, label: '' }} iconClassName="bg-gradient-to-br from-blue-500 to-cyan-500" />
-        <StatCard title="Total Teachers" value={42} subtitle="All departments" icon={Users}
-          trend={{ value: 2, label: '' }} iconClassName="bg-gradient-to-br from-emerald-500 to-teal-500" />
-        <StatCard title="Fee Collection" value="₹6.1L" subtitle="This month" icon={DollarSign}
-          trend={{ value: 18, label: '' }} iconClassName="bg-gradient-to-br from-amber-500 to-orange-500" />
-        <StatCard title="Attendance Today" value="92%" subtitle="Present students" icon={UserCheck}
-          trend={{ value: 3, label: '' }} iconClassName="bg-gradient-to-br from-violet-500 to-purple-500" />
+        <StatCard 
+          title="Total Students" 
+          value={isDashboardLoading ? '...' : stats?.totalStudents || 0} 
+          subtitle="Registered students" 
+          icon={GraduationCap}
+          trend={{ value: 0, label: '' }} 
+          iconClassName="bg-gradient-to-br from-blue-500 to-cyan-500" 
+        />
+        <StatCard 
+          title="Total Teachers" 
+          value={isDashboardLoading ? '...' : stats?.totalTeachers || 0} 
+          subtitle="Faculty members" 
+          icon={Users}
+          trend={{ value: 0, label: '' }} 
+          iconClassName="bg-gradient-to-br from-emerald-500 to-teal-500" 
+        />
+        <StatCard 
+          title="Fee Collection" 
+          value={isDashboardLoading ? '...' : `₹${(stats?.monthlyCollection || 0).toLocaleString()}`} 
+          subtitle="Current month" 
+          icon={DollarSign}
+          trend={{ value: 0, label: '' }} 
+          iconClassName="bg-gradient-to-br from-amber-500 to-orange-500" 
+        />
+        <StatCard 
+          title="Attendance Today" 
+          value={isDashboardLoading ? '...' : `${stats?.todayAttendancePercentage || 0}%`} 
+          subtitle="Present students" 
+          icon={UserCheck}
+          trend={{ value: 0, label: '' }} 
+          iconClassName="bg-gradient-to-br from-violet-500 to-purple-500" 
+        />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -63,16 +77,20 @@ export default function SchoolDashboard() {
             <CardDescription>Monthly collection vs pending</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={feeData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-                <YAxis tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" tickFormatter={(v) => `₹${v / 1000}K`} />
-                <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }} />
-                <Line type="monotone" dataKey="collected" stroke="#10b981" strokeWidth={2} dot={{ r: 4 }} />
-                <Line type="monotone" dataKey="pending" stroke="#f59e0b" strokeWidth={2} dot={{ r: 4 }} />
-              </LineChart>
-            </ResponsiveContainer>
+            {isDashboardLoading ? (
+              <div className="h-[300px] flex items-center justify-center text-muted-foreground">Loading trend...</div>
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={stats?.feeTrend}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
+                  <YAxis tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" tickFormatter={(v) => `₹${v >= 1000 ? v / 1000 + 'K' : v}`} />
+                  <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }} />
+                  <Line type="monotone" dataKey="collected" stroke="#10b981" strokeWidth={2} dot={{ r: 4 }} />
+                  <Line type="monotone" dataKey="pending" stroke="#f59e0b" strokeWidth={2} dot={{ r: 4 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
           </CardContent>
         </Card>
 
@@ -82,22 +100,28 @@ export default function SchoolDashboard() {
             <CardDescription>School-wide distribution</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie data={attendancePie} cx="50%" cy="50%" innerRadius={65} outerRadius={100} paddingAngle={3} dataKey="value">
-                  {attendancePie.map((entry, i) => <Cell key={i} fill={entry.color} />)}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="mt-2 flex flex-wrap justify-center gap-4">
-              {attendancePie.map((item) => (
-                <div key={item.name} className="flex items-center gap-1.5">
-                  <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                  <span className="text-xs text-muted-foreground">{item.name} ({item.value}%)</span>
+            {isDashboardLoading ? (
+              <div className="h-[300px] flex items-center justify-center text-muted-foreground">Loading distribution...</div>
+            ) : (
+              <>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie data={stats?.attendanceDistribution} cx="50%" cy="50%" innerRadius={65} outerRadius={100} paddingAngle={3} dataKey="value">
+                      {stats?.attendanceDistribution.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="mt-2 flex flex-wrap justify-center gap-4">
+                  {stats?.attendanceDistribution.map((item) => (
+                    <div key={item.name} className="flex items-center gap-1.5">
+                      <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                      <span className="text-xs text-muted-foreground">{item.name} ({item.value})</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -112,7 +136,7 @@ export default function SchoolDashboard() {
           </div>
         </CardHeader>
         <CardContent className="space-y-3">
-          {isLoading ? (
+          {isAnnouncementsLoading ? (
             <div className="flex justify-center p-4"><div className="animate-spin h-5 w-5 border-2 border-primary border-t-transparent rounded-full" /></div>
           ) : announcements.length > 0 ? (
             announcements.map((ann) => (

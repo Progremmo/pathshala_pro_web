@@ -17,4 +17,7 @@ export const schoolService = {
 
   delete: (schoolId: number) =>
     api.delete<ApiResponse<void>>(`/schools/${schoolId}`).then((r) => r.data),
+
+  getClassrooms: (schoolId: number) =>
+    api.get<ApiResponse<any[]>>(`/schools/${schoolId}/classrooms`).then((r) => r.data),
 };

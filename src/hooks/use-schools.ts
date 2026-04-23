@@ -72,3 +72,11 @@ export function useDeleteSchool() {
     },
   });
 }
+
+export function useClassrooms(schoolId: number) {
+  return useQuery({
+    queryKey: ['classrooms', schoolId],
+    queryFn: () => schoolService.getClassrooms(schoolId),
+    enabled: !!schoolId,
+  });
+}
