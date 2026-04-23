@@ -14,7 +14,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useSchool, useUpdateSchool } from '@/hooks/use-schools';
 import { useRegisterAdmin } from '@/hooks/use-auth';
-import { Loader2, Plus, Building, UserPlus, Phone, Mail, MapPin } from 'lucide-react';
+import { useUsers, userKeys } from '@/hooks/use-users';
+import { useQueryClient } from '@tanstack/react-query';
+import { Loader2, Plus, Building, UserPlus, Phone, Mail, MapPin, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 const adminSchema = z.object({
@@ -47,6 +49,10 @@ export default function SchoolDetailsPage() {
   const school = response?.data;
   const updateSchool = useUpdateSchool();
   const registerAdmin = useRegisterAdmin();
+  const queryClient = useQueryClient();
+
+  const { data: adminData, isLoading: isAdminLoading } = useUsers({ schoolId, role: 'SCHOOL_ADMIN' });
+  const admins = adminData?.data?.content || [];
 
   const [adminDialogOpen, setAdminDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
@@ -90,6 +96,7 @@ export default function SchoolDetailsPage() {
         onSuccess: () => {
           setAdminDialogOpen(false);
           resetAdminForm();
+          queryClient.invalidateQueries({ queryKey: userKeys.lists() });
         }
       }
     );
@@ -184,8 +191,8 @@ export default function SchoolDetailsPage() {
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>School Administrators</CardTitle>
               <Dialog open={adminDialogOpen} onOpenChange={setAdminDialogOpen}>
-                <DialogTrigger >
-                  <Button size="sm" className="gap-2"><Plus className="h-4 w-4" /> Add Admin</Button>
+                <DialogTrigger render={<Button size="sm" className="gap-2" />}>
+                  <Plus className="h-4 w-4" /> Add Admin
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
@@ -225,11 +232,50 @@ export default function SchoolDetailsPage() {
               </Dialog>
             </CardHeader>
             <CardContent>
-              <div className="p-8 text-center text-muted-foreground border border-dashed rounded-lg bg-muted/20">
-                Click "Add Admin" to generate a user for this school.
-                <br />
-                (Admin list fetching is part of User Management module)
-              </div>
+              {isAdminLoading ? (
+                <div className="flex h-32 items-center justify-center">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : admins.length === 0 ? (
+                <div className="p-8 text-center text-muted-foreground border border-dashed rounded-lg bg-muted/20">
+                  No administrators found for this school.
+                  <br />
+                  Click "Add Admin" to create one.
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b bg-muted/30">
+                        <th className="px-4 py-3 text-left font-medium text-muted-foreground">Name</th>
+                        <th className="px-4 py-3 text-left font-medium text-muted-foreground">Email</th>
+                        <th className="px-4 py-3 text-left font-medium text-muted-foreground">Phone</th>
+                        <th className="px-4 py-3 text-left font-medium text-muted-foreground">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {admins.map((admin) => (
+                        <tr key={admin.id} className="border-b last:border-0 hover:bg-accent/30 transition-colors">
+                          <td className="px-4 py-3 font-medium">{admin.fullName}</td>
+                          <td className="px-4 py-3 text-muted-foreground flex items-center gap-1">
+                            <Mail className="h-3 w-3" /> {admin.email}
+                          </td>
+                          <td className="px-4 py-3 text-muted-foreground">
+                            {admin.phone ? (
+                              <div className="flex items-center gap-1"><Phone className="h-3 w-3" /> {admin.phone}</div>
+                            ) : '-'}
+                          </td>
+                          <td className="px-4 py-3">
+                            <Badge variant={admin.isActive ? "default" : "secondary"} className="text-[10px]">
+                              {admin.isActive ? "Active" : "Inactive"}
+                            </Badge>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
