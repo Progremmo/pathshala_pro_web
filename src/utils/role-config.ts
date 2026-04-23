@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, School, Users, GraduationCap, BookOpen, Calendar,
   ClipboardList, DollarSign, Video, Bell, BarChart3, FileText,
-  Clock, UserCheck, CreditCard, Megaphone,
+  Clock, UserCheck, CreditCard, Megaphone, Settings as SettingsIcon,
 } from 'lucide-react';
 import { RoleName } from '@/types/auth.types';
 
@@ -16,6 +16,9 @@ export const ROLE_NAV_ITEMS: Record<RoleName, NavItem[]> = {
   PROJECT_ADMIN: [
     { title: 'Dashboard', href: '/admin', icon: LayoutDashboard },
     { title: 'Schools', href: '/admin/schools', icon: School },
+    { title: 'Users', href: '/admin/users', icon: Users },
+    { title: 'Subscriptions', href: '/admin/subscriptions', icon: CreditCard },
+    { title: 'Settings', href: '/admin/settings', icon: SettingsIcon },
   ],
   SCHOOL_ADMIN: [
     { title: 'Dashboard', href: '/school', icon: LayoutDashboard },

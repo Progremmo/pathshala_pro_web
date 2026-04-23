@@ -8,4 +8,7 @@ export const userService = {
 
   getById: (userId: number) =>
     api.get<ApiResponse<UserResponse>>(`/users/${userId}`).then((r) => r.data),
+
+  toggleStatus: (userId: number, active: boolean) =>
+    api.patch<ApiResponse<UserResponse>>(`/users/${userId}/status?active=${active}`).then((r) => r.data),
 };
