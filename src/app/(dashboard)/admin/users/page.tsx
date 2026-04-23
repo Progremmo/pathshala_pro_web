@@ -22,7 +22,8 @@ export default function GlobalUsersPage() {
   const { data, isLoading } = useUsers({ 
     page, 
     size: 50, 
-    role: roleFilter === 'ALL' ? undefined : roleFilter 
+    role: roleFilter === 'ALL' ? undefined : roleFilter,
+    search: search || undefined
   });
   
   const toggleStatus = useToggleUserStatus();

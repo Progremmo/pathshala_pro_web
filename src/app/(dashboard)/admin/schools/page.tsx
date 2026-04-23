@@ -1,4 +1,5 @@
 'use client';
+// Force rebuild to resolve potential 404 issue
 import { School, Plus } from 'lucide-react';
 import { PageHeader } from '@/components/shared/page-header';
 import { Button } from '@/components/ui/button';

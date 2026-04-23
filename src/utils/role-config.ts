@@ -1,4 +1,5 @@
 import {
+// Force rebuild to resolve potential 404 issue
   LayoutDashboard, School, Users, GraduationCap, BookOpen, Calendar,
   ClipboardList, DollarSign, Video, Bell, BarChart3, FileText,
   Clock, UserCheck, CreditCard, Megaphone, Settings as SettingsIcon,

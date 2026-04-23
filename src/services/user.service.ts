@@ -3,7 +3,7 @@ import { ApiResponse, PaginatedResponse, PaginationParams } from '@/types/api.ty
 import { UserResponse } from '@/types/user.types';
 
 export const userService = {
-  getAll: (params?: PaginationParams & { schoolId?: number; role?: string }) =>
+  getAll: (params?: PaginationParams & { schoolId?: number; role?: string; search?: string }) =>
     api.get<ApiResponse<PaginatedResponse<UserResponse>>>('/users', { params }).then((r) => r.data),
 
   getById: (userId: number) =>

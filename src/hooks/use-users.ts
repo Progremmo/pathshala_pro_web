@@ -9,7 +9,7 @@ export const userKeys = {
   list: (params: any) => [...userKeys.lists(), params] as const,
 };
 
-export function useUsers(params?: PaginationParams & { schoolId?: number; role?: string }) {
+export function useUsers(params?: PaginationParams & { schoolId?: number; role?: string; search?: string }) {
   return useQuery({
     queryKey: userKeys.list(params || {}),
     queryFn: () => userService.getAll(params),
