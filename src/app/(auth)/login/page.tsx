@@ -111,8 +111,8 @@ export default function LoginPage() {
                 <p className="text-xs text-destructive">{errors.password.message}</p>
               )}
               <div className="flex justify-end">
-                <Link 
-                  href="/login/forgot-password" 
+                <Link
+                  href="/login/forgot-password"
                   className="text-xs font-medium text-primary hover:underline transition-all"
                 >
                   Forgot Password?
@@ -132,12 +132,12 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="mt-6 rounded-lg border border-dashed border-border/60 bg-muted/30 p-3">
+          {/* <div className="mt-6 rounded-lg border border-dashed border-border/60 bg-muted/30 p-3">
             <p className="text-xs font-medium text-muted-foreground">Demo Credentials</p>
             <p className="mt-1 font-mono text-xs text-foreground/70">
               admin@pathshalapro.com / Admin@123
             </p>
-          </div>
+          </div> */}
         </CardContent>
       </Card>
     </div>
