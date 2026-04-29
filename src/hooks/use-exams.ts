@@ -14,10 +14,10 @@ export const examKeys = {
 
 // --- Queries ---
 
-export function useExams(schoolId: number, params?: PaginationParams) {
+export function useExams({ schoolId, page = 0, size = 20 }: { schoolId: number; page?: number; size?: number }) {
   return useQuery({
-    queryKey: examKeys.list(schoolId, params),
-    queryFn: () => examService.getAll(schoolId, params),
+    queryKey: examKeys.list(schoolId, { page, size }),
+    queryFn: () => examService.getAll(schoolId, { page, size }),
     enabled: !!schoolId,
   });
 }

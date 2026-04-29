@@ -1,5 +1,5 @@
 import {
-// Force rebuild to resolve potential 404 issue
+  // Force rebuild to resolve potential 404 issue
   LayoutDashboard, School, Users, GraduationCap, BookOpen, Calendar,
   ClipboardList, DollarSign, Video, Bell, BarChart3, FileText,
   Clock, UserCheck, CreditCard, Megaphone, Settings as SettingsIcon,
@@ -25,6 +25,7 @@ export const ROLE_NAV_ITEMS: Record<RoleName, NavItem[]> = {
     { title: 'Dashboard', href: '/school', icon: LayoutDashboard },
     { title: 'Teachers', href: '/school/teachers', icon: Users },
     { title: 'Students', href: '/school/students', icon: GraduationCap },
+    { title: 'Classes', href: '/school/classes', icon: School },
     { title: 'Fee Management', href: '/school/fees', icon: DollarSign },
     { title: 'Exams', href: '/school/exams', icon: ClipboardList },
     { title: 'Attendance', href: '/school/attendance', icon: UserCheck },

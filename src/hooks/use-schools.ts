@@ -80,3 +80,48 @@ export function useClassrooms(schoolId: number) {
     enabled: !!schoolId,
   });
 }
+
+export function useCreateClassroom() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ schoolId, data }: { schoolId: number; data: any }) => schoolService.createClassroom(schoolId, data),
+    onSuccess: (res, variables) => {
+      toast.success('Classroom created successfully');
+      queryClient.invalidateQueries({ queryKey: ['classrooms', variables.schoolId] });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to create classroom');
+    },
+  });
+}
+
+export function useUpdateClassroom() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ schoolId, classRoomId, data }: { schoolId: number; classRoomId: number; data: any }) => schoolService.updateClassroom(schoolId, classRoomId, data),
+    onSuccess: (res, variables) => {
+      toast.success('Classroom updated successfully');
+      queryClient.invalidateQueries({ queryKey: ['classrooms', variables.schoolId] });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to update classroom');
+    },
+  });
+}
+
+export function useDeleteClassroom() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ schoolId, classRoomId }: { schoolId: number; classRoomId: number }) => schoolService.deleteClassroom(schoolId, classRoomId),
+    onSuccess: (res, variables) => {
+      toast.success('Classroom deleted successfully');
+      queryClient.invalidateQueries({ queryKey: ['classrooms', variables.schoolId] });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to delete classroom');
+    },
+  });
+}

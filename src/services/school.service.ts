@@ -20,4 +20,13 @@ export const schoolService = {
 
   getClassrooms: (schoolId: number) =>
     api.get<ApiResponse<any[]>>(`/schools/${schoolId}/classrooms`).then((r) => r.data),
+
+  createClassroom: (schoolId: number, data: any) =>
+    api.post<ApiResponse<any>>(`/schools/${schoolId}/classrooms`, data).then((r) => r.data),
+
+  updateClassroom: (schoolId: number, classRoomId: number, data: any) =>
+    api.put<ApiResponse<any>>(`/schools/${schoolId}/classrooms/${classRoomId}`, data).then((r) => r.data),
+
+  deleteClassroom: (schoolId: number, classRoomId: number) =>
+    api.delete<ApiResponse<void>>(`/schools/${schoolId}/classrooms/${classRoomId}`).then((r) => r.data),
 };
