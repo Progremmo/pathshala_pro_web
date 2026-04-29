@@ -64,6 +64,38 @@ export function useCreateFeeStructure() {
   });
 }
 
+export function useUpdateFeeStructure() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ schoolId, structureId, data }: { schoolId: number; structureId: number; data: FeeStructureRequest }) =>
+      feeService.updateStructure(schoolId, structureId, data),
+    onSuccess: (res, variables) => {
+      toast.success('Fee structure updated successfully');
+      queryClient.invalidateQueries({ queryKey: feeKeys.structures(variables.schoolId) });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to update fee structure');
+    },
+  });
+}
+
+export function useDeleteFeeStructure() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ schoolId, structureId }: { schoolId: number; structureId: number }) =>
+      feeService.deleteStructure(schoolId, structureId),
+    onSuccess: (res, variables) => {
+      toast.success('Fee structure deleted successfully');
+      queryClient.invalidateQueries({ queryKey: feeKeys.structures(variables.schoolId) });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to delete fee structure');
+    },
+  });
+}
+
 export function useCreateFeeInvoice() {
   const queryClient = useQueryClient();
 
@@ -77,6 +109,38 @@ export function useCreateFeeInvoice() {
     },
     onError: (error: any) => {
       toast.error(error?.response?.data?.message || 'Failed to create invoice');
+    },
+  });
+}
+
+export function useUpdateFeeInvoice() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ schoolId, invoiceId, data }: { schoolId: number; invoiceId: number; data: FeeInvoiceRequest }) =>
+      feeService.updateInvoice(schoolId, invoiceId, data),
+    onSuccess: (res, variables) => {
+      toast.success('Invoice updated successfully');
+      queryClient.invalidateQueries({ queryKey: feeKeys.invoices(variables.schoolId) });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to update invoice');
+    },
+  });
+}
+
+export function useDeleteFeeInvoice() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ schoolId, invoiceId }: { schoolId: number; invoiceId: number }) =>
+      feeService.deleteInvoice(schoolId, invoiceId),
+    onSuccess: (res, variables) => {
+      toast.success('Invoice deleted successfully');
+      queryClient.invalidateQueries({ queryKey: feeKeys.invoices(variables.schoolId) });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to delete invoice');
     },
   });
 }

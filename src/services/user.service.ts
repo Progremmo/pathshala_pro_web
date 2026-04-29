@@ -14,4 +14,7 @@ export const userService = {
 
   toggleStatus: (userId: number, active: boolean) =>
     api.patch<ApiResponse<UserResponse>>(`/users/${userId}/status?active=${active}`).then((r) => r.data),
+
+  getByClassroom: (classRoomId: number) =>
+    api.get<ApiResponse<UserResponse[]>>(`/users/classroom/${classRoomId}`).then((r) => r.data),
 };

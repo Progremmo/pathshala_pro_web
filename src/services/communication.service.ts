@@ -23,6 +23,12 @@ export const communicationService = {
   createAnnouncement: (schoolId: number, data: AnnouncementRequest) =>
     api.post<ApiResponse<Announcement>>(`/schools/${schoolId}/communication/announcements`, data).then((r) => r.data),
 
+  updateAnnouncement: (schoolId: number, announcementId: number, data: AnnouncementRequest) =>
+    api.put<ApiResponse<Announcement>>(`/schools/${schoolId}/communication/announcements/${announcementId}`, data).then((r) => r.data),
+
+  deleteAnnouncement: (schoolId: number, announcementId: number) =>
+    api.delete<ApiResponse<void>>(`/schools/${schoolId}/communication/announcements/${announcementId}`).then((r) => r.data),
+
   getAnnouncements: (schoolId: number, audience?: string, params?: PaginationParams) =>
     api.get<ApiResponse<PaginatedResponse<Announcement>>>(`/schools/${schoolId}/communication/announcements`, {
       params: { audience, ...params },

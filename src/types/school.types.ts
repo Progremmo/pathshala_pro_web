@@ -31,3 +31,20 @@ export interface SchoolResponse {
   subscriptionStatus: SubscriptionStatus;
   createdAt: string;
 }
+export interface SubjectRequest {
+  name: string;
+  code: string;
+  description?: string;
+  grade?: string;
+  creditHours?: number;
+}
+
+export interface SubjectResponse {
+  id: number;
+  name: string;
+  code: string;
+  description: string | null;
+  grade: string | null;
+  creditHours: number | null;
+  schoolId: number;
+}

@@ -26,6 +26,7 @@ export const ROLE_NAV_ITEMS: Record<RoleName, NavItem[]> = {
     { title: 'Teachers', href: '/school/teachers', icon: Users },
     { title: 'Students', href: '/school/students', icon: GraduationCap },
     { title: 'Classes', href: '/school/classes', icon: School },
+    { title: 'Subjects', href: '/school/subjects', icon: BookOpen },
     { title: 'Fee Management', href: '/school/fees', icon: DollarSign },
     { title: 'Exams', href: '/school/exams', icon: ClipboardList },
     { title: 'Attendance', href: '/school/attendance', icon: UserCheck },

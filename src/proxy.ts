@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Middleware is kept minimal - auth protection is handled client-side
-// via Zustand (localStorage) in the dashboard layout component.
-// This middleware only handles basic redirects.
+// Proxy is the new convention in Next.js 16 (replacing middleware)
+// This file handles basic redirects and network boundary logic.
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   // Allow all requests through - auth is handled client-side
   return NextResponse.next();
 }

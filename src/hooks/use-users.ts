@@ -57,3 +57,11 @@ export function useToggleUserStatus() {
     },
   });
 }
+
+export function useClassStudents(classRoomId: number) {
+  return useQuery({
+    queryKey: [...userKeys.all, 'classroom', classRoomId],
+    queryFn: () => userService.getByClassroom(classRoomId),
+    enabled: !!classRoomId,
+  });
+}

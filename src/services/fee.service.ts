@@ -10,12 +10,24 @@ export const feeService = {
   getStructures: (schoolId: number, params?: PaginationParams) =>
     api.get<ApiResponse<PaginatedResponse<FeeStructure>>>(`/schools/${schoolId}/fees/structures`, { params }).then((r) => r.data),
 
+  updateStructure: (schoolId: number, structureId: number, data: FeeStructureRequest) =>
+    api.put<ApiResponse<FeeStructure>>(`/schools/${schoolId}/fees/structures/${structureId}`, data).then((r) => r.data),
+
+  deleteStructure: (schoolId: number, structureId: number) =>
+    api.delete<ApiResponse<void>>(`/schools/${schoolId}/fees/structures/${structureId}`).then((r) => r.data),
+
   // Fee Invoices
   createInvoice: (schoolId: number, data: FeeInvoiceRequest) =>
     api.post<ApiResponse<FeeInvoice>>(`/schools/${schoolId}/fees/invoices`, data).then((r) => r.data),
 
   getInvoices: (schoolId: number, params?: PaginationParams) =>
     api.get<ApiResponse<PaginatedResponse<FeeInvoice>>>(`/schools/${schoolId}/fees/invoices`, { params }).then((r) => r.data),
+
+  updateInvoice: (schoolId: number, invoiceId: number, data: FeeInvoiceRequest) =>
+    api.put<ApiResponse<FeeInvoice>>(`/schools/${schoolId}/fees/invoices/${invoiceId}`, data).then((r) => r.data),
+
+  deleteInvoice: (schoolId: number, invoiceId: number) =>
+    api.delete<ApiResponse<void>>(`/schools/${schoolId}/fees/invoices/${invoiceId}`).then((r) => r.data),
 
   getStudentInvoices: (schoolId: number, studentId: number, params?: PaginationParams) =>
     api.get<ApiResponse<PaginatedResponse<FeeInvoice>>>(`/schools/${schoolId}/fees/invoices/student/${studentId}`, { params }).then((r) => r.data),

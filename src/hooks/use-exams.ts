@@ -56,6 +56,38 @@ export function useCreateExam() {
   });
 }
 
+export function useUpdateExam() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ schoolId, examId, data }: { schoolId: number; examId: number; data: ExamRequest }) =>
+      examService.update(schoolId, examId, data),
+    onSuccess: (res, variables) => {
+      toast.success('Exam updated successfully');
+      queryClient.invalidateQueries({ queryKey: examKeys.lists(variables.schoolId) });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to update exam');
+    },
+  });
+}
+
+export function useDeleteExam() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ schoolId, examId }: { schoolId: number; examId: number }) =>
+      examService.delete(schoolId, examId),
+    onSuccess: (res, variables) => {
+      toast.success('Exam deleted successfully');
+      queryClient.invalidateQueries({ queryKey: examKeys.lists(variables.schoolId) });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to delete exam');
+    },
+  });
+}
+
 export function useEnterMarks() {
   return useMutation({
     mutationFn: ({ schoolId, examId, data }: { schoolId: number; examId: number; data: MarksEntryRequest }) =>

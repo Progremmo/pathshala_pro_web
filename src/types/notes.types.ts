@@ -22,7 +22,9 @@ export interface Notes {
   isVisible: boolean;
   schoolId: number;
   subjectId: number;
-  uploadedBy: number;
+  subjectName: string;
+  uploadedById: number;
+  uploadedByName: string;
   createdAt: string;
   updatedAt: string | null;
 }

@@ -89,10 +89,42 @@ export function useCreateAnnouncement() {
       communicationService.createAnnouncement(schoolId, data),
     onSuccess: (res, variables) => {
       toast.success('Announcement created successfully');
-      queryClient.invalidateQueries({ queryKey: ['communication', 'announcements', variables.schoolId] });
+      queryClient.invalidateQueries({ queryKey: communicationKeys.all });
     },
     onError: (error: any) => {
       toast.error(error?.response?.data?.message || 'Failed to create announcement');
+    },
+  });
+}
+
+export function useUpdateAnnouncement() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ schoolId, announcementId, data }: { schoolId: number; announcementId: number; data: AnnouncementRequest }) =>
+      communicationService.updateAnnouncement(schoolId, announcementId, data),
+    onSuccess: (res, variables) => {
+      toast.success('Announcement updated successfully');
+      queryClient.invalidateQueries({ queryKey: communicationKeys.all });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to update announcement');
+    },
+  });
+}
+
+export function useDeleteAnnouncement() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ schoolId, announcementId }: { schoolId: number; announcementId: number }) =>
+      communicationService.deleteAnnouncement(schoolId, announcementId),
+    onSuccess: (res, variables) => {
+      toast.success('Announcement deleted successfully');
+      queryClient.invalidateQueries({ queryKey: communicationKeys.all });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to delete announcement');
     },
   });
 }

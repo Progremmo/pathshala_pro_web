@@ -22,8 +22,12 @@ export interface Timetable {
   academicYear: string;
   schoolId: number;
   classRoomId: number;
+  classRoomName: string;
   subjectId: number;
+  subjectName: string;
+  subjectCode: string;
   teacherId: number;
+  teacherName: string;
   createdAt: string;
   updatedAt: string | null;
 }
