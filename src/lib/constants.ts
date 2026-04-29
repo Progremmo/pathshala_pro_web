@@ -39,6 +39,7 @@ export const ATTENDANCE_STATUS_COLORS: Record<string, string> = {
   HALF_DAY: 'bg-orange-500/10 text-orange-500',
   HOLIDAY: 'bg-blue-500/10 text-blue-500',
   LEAVE: 'bg-purple-500/10 text-purple-500',
+  EXCUSED: 'bg-slate-500/10 text-slate-500',
 };
 
 export const PAYMENT_STATUS_COLORS: Record<string, string> = {

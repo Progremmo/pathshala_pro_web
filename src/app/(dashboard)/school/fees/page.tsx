@@ -144,7 +144,7 @@ export default function FeeManagementPage() {
                 <div className="space-y-2">
                   <Label>Name</Label>
                   <Input {...register('name')} placeholder="e.g. Tuition Fee - Class 10" />
-                  {errors.name && <p className="text-xs text-red-500">{errors.name.message}</p>}
+                  {errors.name && <p className="text-xs text-red-500">{(errors.name as any).message}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label>Fee Type</Label>
@@ -162,7 +162,7 @@ export default function FeeManagementPage() {
                 <div className="space-y-2">
                   <Label>Amount (₹)</Label>
                   <Input {...register('amount')} type="number" placeholder="5000" />
-                  {errors.amount && <p className="text-xs text-red-500">{errors.amount.message}</p>}
+                  {errors.amount && <p className="text-xs text-red-500">{(errors.amount as any).message}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label>Frequency</Label>

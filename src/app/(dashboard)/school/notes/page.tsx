@@ -136,7 +136,7 @@ export default function NotesPage() {
               <div className="space-y-2">
                 <Label>Title</Label>
                 <Input {...register('title')} placeholder="e.g. Chapter 5 – Quadratic Equations" />
-                {errors.title && <p className="text-xs text-red-500">{(errors.title as any).message}</p>}
+                {errors.title?.message && <p className="text-xs text-red-500">{String(errors.title.message)}</p>}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -166,7 +166,7 @@ export default function NotesPage() {
               <div className="space-y-2">
                 <Label>Content URL</Label>
                 <Input {...register('contentUrl')} placeholder="https://..." />
-                {errors.contentUrl && <p className="text-xs text-red-500">{(errors.contentUrl as any).message}</p>}
+                {errors.contentUrl?.message && <p className="text-xs text-red-500">{String(errors.contentUrl.message)}</p>}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">

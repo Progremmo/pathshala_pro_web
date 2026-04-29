@@ -23,7 +23,7 @@ export default function StudentDashboard() {
 
   // Fetch Data
   const { data: attendanceData } = useStudentAttendanceStats(schoolId || 0, userId || 0, startOfYear, today);
-  const { data: examsData, isLoading: isExamsLoading } = useExams(schoolId || 0, { page: 0, size: 5 });
+  const { data: examsData, isLoading: isExamsLoading } = useExams({ schoolId: schoolId || 0, page: 0, size: 5 });
   const { data: invoicesData } = useStudentInvoices(schoolId || 0, userId || 0, { page: 0, size: 50 });
   const { data: notificationsData } = useUnreadCount(schoolId || 0);
 

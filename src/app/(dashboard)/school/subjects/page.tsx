@@ -108,12 +108,12 @@ export default function SubjectsPage() {
                 <div className="space-y-2">
                   <Label htmlFor="name">Subject Name</Label>
                   <Input id="name" {...register('name')} placeholder="e.g. Mathematics" />
-                  {errors.name && <p className="text-xs text-red-500">{(errors.name as any).message}</p>}
+                  {errors.name?.message && <p className="text-xs text-red-500">{String(errors.name.message)}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="code">Subject Code</Label>
                   <Input id="code" {...register('code')} placeholder="e.g. MATH101" />
-                  {errors.code && <p className="text-xs text-red-500">{(errors.code as any).message}</p>}
+                  {errors.code?.message && <p className="text-xs text-red-500">{String(errors.code.message)}</p>}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">

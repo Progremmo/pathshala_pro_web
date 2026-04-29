@@ -106,7 +106,7 @@ export default function OnlineClassesPage() {
               <div className="space-y-2">
                 <Label>Title / Topic</Label>
                 <Input {...register('title')} placeholder="e.g. Quadratic Equations Live" />
-                {errors.title && <p className="text-xs text-red-500">{(errors.title as any).message}</p>}
+                {errors.title?.message && <p className="text-xs text-red-500">{String(errors.title.message)}</p>}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -167,7 +167,7 @@ export default function OnlineClassesPage() {
               <div className="space-y-2">
                 <Label>Meeting Link</Label>
                 <Input {...register('meetingLink')} placeholder="https://meet.google.com/..." />
-                {errors.meetingLink && <p className="text-xs text-red-500">{(errors.meetingLink as any).message}</p>}
+                {errors.meetingLink?.message && <p className="text-xs text-red-500">{String(errors.meetingLink.message)}</p>}
               </div>
               <div className="flex justify-end gap-2 pt-2">
                 <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
