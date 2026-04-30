@@ -153,8 +153,12 @@ export default function GlobalUsersPage() {
                           <div className="flex justify-center">
                             <Switch 
                               checked={user.isActive} 
-                              onCheckedChange={() => handleToggleActive(user.id, user.isActive)}
+                              onCheckedChange={(checked) => toggleStatus.mutate({ 
+                                id: user.id, 
+                                active: checked 
+                              })}
                               disabled={toggleStatus.isPending && toggleStatus.variables?.id === user.id}
+                              title={user.isActive ? "Deactivate User" : "Activate User"}
                             />
                           </div>
                         </td>

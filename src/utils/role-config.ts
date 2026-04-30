@@ -35,6 +35,7 @@ export const ROLE_NAV_ITEMS: Record<RoleName, NavItem[]> = {
     { title: 'Online Classes', href: '/school/online-classes', icon: Video },
     { title: 'Announcements', href: '/school/announcements', icon: Megaphone },
     { title: 'Reports', href: '/school/reports', icon: BarChart3 },
+    { title: 'Settings', href: '/school/settings', icon: SettingsIcon },
   ],
   TEACHER: [
     { title: 'Dashboard', href: '/teacher', icon: LayoutDashboard },

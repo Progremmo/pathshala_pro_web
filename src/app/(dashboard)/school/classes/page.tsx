@@ -1,7 +1,7 @@
 'use client';
 import { PageHeader } from '@/components/shared/page-header';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -13,8 +13,11 @@ import { useAuthStore } from '@/store/auth-store';
 import { useClassrooms, useCreateClassroom, useUpdateClassroom, useDeleteClassroom } from '@/hooks/use-schools';
 import { useUsers } from '@/hooks/use-users';
 import { useState, useEffect } from 'react';
+import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { useSchoolConfigs } from '@/hooks/use-school-configs';
+import { DEFAULT_ACADEMIC_YEARS } from '@/lib/constants';
 
 const schema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -36,6 +39,9 @@ export default function ClassesPage() {
   );
   const teachers = teachersResponse?.data?.content || [];
   
+  const { data: schoolConfigs } = useSchoolConfigs(schoolId || 0);
+  const academicYears = schoolConfigs?.ACADEMIC_YEARS || DEFAULT_ACADEMIC_YEARS;
+  
   const { mutate: createClass, isPending: isCreating } = useCreateClassroom();
   const { mutate: updateClass, isPending: isUpdating } = useUpdateClassroom();
   const { mutate: deleteClass, isPending: isDeleting } = useDeleteClassroom();
@@ -46,7 +52,7 @@ export default function ClassesPage() {
   const { register, handleSubmit, formState: { errors }, reset, control } = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
-      academicYear: '2024-25',
+      academicYear: academicYears[0],
       classTeacherId: '',
     }
   });
@@ -66,8 +72,7 @@ export default function ClassesPage() {
       reset({
         name: '',
         section: '',
-        grade: '',
-        academicYear: '2024-25',
+        academicYear: academicYears[0],
         capacity: undefined,
         roomNumber: '',
         classTeacherId: '',
@@ -114,7 +119,7 @@ export default function ClassesPage() {
     <div className="space-y-6">
       <PageHeader title="Classes" description="Manage classrooms and sections">
         <Dialog open={open} onOpenChange={(val) => { setOpen(val); if (!val) setEditingClass(null); }}>
-          <DialogTrigger render={<Button className="gap-2"><Plus className="h-4 w-4" /> Add Class</Button>} />
+          <DialogTrigger render={<button className={cn(buttonVariants({ variant: 'default' }), "gap-2")}><Plus className="h-4 w-4" /> Add Class</button>} />
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>{editingClass ? 'Edit Class' : 'Add New Class'}</DialogTitle>
@@ -139,7 +144,18 @@ export default function ClassesPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="academicYear">Academic Year</Label>
-                  <Input id="academicYear" {...register('academicYear')} placeholder="2024-25" />
+                  <Controller
+                    name="academicYear"
+                    control={control}
+                    render={({ field }) => (
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {academicYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                   {errors.academicYear && <p className="text-xs text-red-500">{errors.academicYear.message}</p>}
                 </div>
               </div>

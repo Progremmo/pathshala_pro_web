@@ -7,17 +7,19 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { PageHeader } from '@/components/shared/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useSchool, useUpdateSchool } from '@/hooks/use-schools';
+import { useSchool, useUpdateSchool, useToggleSchoolStatus } from '@/hooks/use-schools';
 import { useRegisterAdmin } from '@/hooks/use-auth';
-import { useUsers, userKeys } from '@/hooks/use-users';
+import { useUsers, userKeys, useToggleUserStatus } from '@/hooks/use-users';
 import { useQueryClient } from '@tanstack/react-query';
-import { Loader2, Plus, Building, UserPlus, Phone, Mail, MapPin, Trash2 } from 'lucide-react';
+import { Loader2, Plus, Building, UserPlus, Phone, Mail, MapPin, Trash2, Power } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { cn } from '@/lib/utils';
 
 const adminSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -48,6 +50,8 @@ export default function SchoolDetailsPage() {
   const { data: response, isLoading } = useSchool(schoolId);
   const school = response?.data;
   const updateSchool = useUpdateSchool();
+  const toggleSchoolStatus = useToggleSchoolStatus();
+  const toggleUserStatus = useToggleUserStatus();
   const registerAdmin = useRegisterAdmin();
   const queryClient = useQueryClient();
 
@@ -125,7 +129,27 @@ export default function SchoolDetailsPage() {
               <CardHeader><CardTitle>School Information</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div><p className="text-muted-foreground mb-1">Status</p><Badge variant={school.isActive ? "default" : "destructive"}>{school.isActive ? "Active" : "Inactive"}</Badge></div>
+                  <div>
+                    <p className="text-muted-foreground mb-1">Status</p>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={school.isActive ? "default" : "destructive"}>
+                        {school.isActive ? "Active" : "Inactive"}
+                      </Badge>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2 text-[10px]"
+                        disabled={toggleSchoolStatus.isPending}
+                        onClick={() => toggleSchoolStatus.mutate({
+                          id: schoolId,
+                          currentData: school,
+                          active: !school.isActive
+                        })}
+                      >
+                        {toggleSchoolStatus.isPending ? "Updating..." : `Mark as ${school.isActive ? "Inactive" : "Active"}`}
+                      </Button>
+                    </div>
+                  </div>
                   <div><p className="text-muted-foreground mb-1">Subscription</p><Badge variant="secondary">{school.subscriptionStatus}</Badge></div>
                   <div className="col-span-2 flex items-center gap-2"><Mail className="h-4 w-4 text-muted-foreground" /> {school.email || 'N/A'}</div>
                   <div className="col-span-2 flex items-center gap-2"><Phone className="h-4 w-4 text-muted-foreground" /> {school.phone || 'N/A'}</div>
@@ -191,9 +215,9 @@ export default function SchoolDetailsPage() {
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>School Administrators</CardTitle>
               <Dialog open={adminDialogOpen} onOpenChange={setAdminDialogOpen}>
-                <DialogTrigger render={<Button size="sm" className="gap-2" />}>
+                <DialogTrigger render={<button className={cn(buttonVariants({ size: 'sm', variant: 'default' }), "gap-2")}>
                   <Plus className="h-4 w-4" /> Add Admin
-                </DialogTrigger>
+                </button>} />
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle>Add School Administrator</DialogTitle>
@@ -251,6 +275,7 @@ export default function SchoolDetailsPage() {
                         <th className="px-4 py-3 text-left font-medium text-muted-foreground">Email</th>
                         <th className="px-4 py-3 text-left font-medium text-muted-foreground">Phone</th>
                         <th className="px-4 py-3 text-left font-medium text-muted-foreground">Status</th>
+                        <th className="px-4 py-3 text-right font-medium text-muted-foreground">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -269,6 +294,16 @@ export default function SchoolDetailsPage() {
                             <Badge variant={admin.isActive ? "default" : "secondary"} className="text-[10px]">
                               {admin.isActive ? "Active" : "Inactive"}
                             </Badge>
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <Switch
+                              checked={admin.isActive}
+                              onCheckedChange={(checked) => toggleUserStatus.mutate({
+                                id: admin.id,
+                                active: checked
+                              })}
+                              disabled={toggleUserStatus.isPending && toggleUserStatus.variables?.id === admin.id}
+                            />
                           </td>
                         </tr>
                       ))}

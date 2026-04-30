@@ -12,6 +12,7 @@ export interface SchoolRequest {
   email?: string;
   website?: string;
   logoUrl?: string;
+  isActive?: boolean;
 }
 
 // Matches SchoolResponse.java

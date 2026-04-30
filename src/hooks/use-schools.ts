@@ -48,12 +48,31 @@ export function useUpdateSchool() {
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: SchoolRequest }) => schoolService.update(id, data),
     onSuccess: (res, variables) => {
-      toast.success('School updated successfully');
+      toast.success('School details updated');
       queryClient.invalidateQueries({ queryKey: schoolKeys.lists() });
       queryClient.invalidateQueries({ queryKey: schoolKeys.detail(variables.id) });
     },
     onError: (error: any) => {
       toast.error(error?.response?.data?.message || 'Failed to update school');
+    },
+  });
+}
+
+export function useToggleSchoolStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, currentData, active }: { id: number; currentData: any; active: boolean }) => {
+      const { id: _, createdAt, subscriptionStatus, ...cleanData } = currentData;
+      return schoolService.update(id, { ...cleanData, isActive: active });
+    },
+    onSuccess: (res, variables) => {
+      const status = res.data?.isActive ?? variables.active;
+      toast.success(`School ${status ? 'activated' : 'deactivated'} successfully`);
+      queryClient.invalidateQueries({ queryKey: schoolKeys.all });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to change school status');
     },
   });
 }

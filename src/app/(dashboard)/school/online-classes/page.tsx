@@ -3,14 +3,15 @@
 import { PageHeader } from '@/components/shared/page-header';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  Plus, Video, ExternalLink, Loader2, Calendar, Clock, 
-  User as UserIcon, BookOpen, Trash2, CheckCircle2, XCircle, AlertCircle 
+import {
+  Plus, Video, ExternalLink, Loader2, Calendar, Clock,
+  User as UserIcon, BookOpen, Trash2, CheckCircle2, XCircle, AlertCircle
 } from 'lucide-react';
 import { useAuthStore } from '@/store/auth-store';
 import { useOnlineClasses, useScheduleClass, useUpdateClassStatus, useDeleteClass } from '@/hooks/use-online-classes';
@@ -97,7 +98,7 @@ export default function OnlineClassesPage() {
     <div className="space-y-6">
       <PageHeader title="Online Classes" description="Schedule and manage virtual sessions">
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger render={<Button className="gap-2"><Plus className="h-4 w-4" /> Schedule Class</Button>} />
+          <DialogTrigger render={<button className={cn(buttonVariants({ variant: 'default' }), "gap-2")}><Plus className="h-4 w-4" /> Schedule Class</button>} />
           <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle>Schedule Online Class</DialogTitle>
@@ -251,7 +252,7 @@ export default function OnlineClassesPage() {
                     </div>
 
                     {c.meetingLink && (
-                      <Button size="sm" className="gap-2 px-4 shadow-sm" render={
+                      <Button size="sm" className="gap-2 px-4 shadow-sm" nativeButton={false} render={
                         <a href={c.meetingLink} target="_blank" rel="noopener noreferrer" />
                       }>
                         Join Session <ExternalLink className="h-3 w-3" />

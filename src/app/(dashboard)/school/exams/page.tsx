@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { PageHeader } from '@/components/shared/page-header';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Plus, Loader2, Edit2, Trash2, Calendar, Clock, ClipboardList } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,9 +18,11 @@ import { useExams, useCreateExam, useUpdateExam, useDeleteExam, usePublishResult
 import { useClassrooms } from '@/hooks/use-schools';
 import { useSubjects } from '@/hooks/use-subjects';
 import { useAuthStore } from '@/store/auth-store';
-import { EXAM_TYPE_LABELS, ACADEMIC_YEARS } from '@/lib/constants';
+import { DEFAULT_EXAM_TYPE_LABELS, DEFAULT_ACADEMIC_YEARS } from '@/lib/constants';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
+import { useSchoolConfigs } from '@/hooks/use-school-configs';
 
 const schema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -46,10 +48,14 @@ export default function ExamsPage() {
   const { data, isLoading } = useExams({ schoolId: schoolId || 0, page: 0, size: 50 });
   const { data: classroomsData } = useClassrooms(schoolId || 0);
   const { data: subjectsData } = useSubjects(schoolId || 0);
+  const { data: schoolConfigs } = useSchoolConfigs(schoolId || 0);
   
   const exams = data?.data?.content || [];
   const classrooms = classroomsData?.data || [];
   const subjects = subjectsData?.data || [];
+
+  const examTypeLabels = schoolConfigs?.EXAM_TYPES || DEFAULT_EXAM_TYPE_LABELS;
+  const academicYears = schoolConfigs?.ACADEMIC_YEARS || DEFAULT_ACADEMIC_YEARS;
 
   const { mutate: createExam, isPending: isCreating } = useCreateExam();
   const { mutate: updateExam, isPending: isUpdating } = useUpdateExam();
@@ -138,7 +144,7 @@ export default function ExamsPage() {
     <div className="space-y-6">
       <PageHeader title="Exams" description="Create and manage examinations">
         <Dialog open={open} onOpenChange={(val) => { setOpen(val); if (!val) setEditingExam(null); }}>
-          <DialogTrigger render={<Button className="gap-2"><Plus className="h-4 w-4" /> Create Exam</Button>} />
+          <DialogTrigger render={<button className={cn(buttonVariants({ variant: 'default' }), "gap-2")}><Plus className="h-4 w-4" /> Create Exam</button>} />
           <DialogContent className="max-w-2xl">
             <DialogHeader><DialogTitle>{editingExam ? 'Edit Exam' : 'Schedule New Exam'}</DialogTitle></DialogHeader>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-4">
@@ -148,7 +154,7 @@ export default function ExamsPage() {
                   <Controller name="examType" control={control} render={({ field }) => (
                     <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>{Object.entries(EXAM_TYPE_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+                      <SelectContent>{Object.entries(examTypeLabels).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                     </Select>
                   )} />
                 </div>
@@ -175,7 +181,7 @@ export default function ExamsPage() {
                   <Controller name="academicYear" control={control} render={({ field }) => (
                     <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>{ACADEMIC_YEARS.map((y) => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
+                      <SelectContent>{academicYears.map((y) => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
                     </Select>
                   )} />
                 </div>
@@ -217,7 +223,7 @@ export default function ExamsPage() {
                     <tr key={e.id} className="border-b last:border-0 hover:bg-accent/30 transition-colors">
                       <td className="px-4 py-3 font-medium">
                         <div>{e.name}</div>
-                        <Badge variant="outline" className="text-[10px] mt-1">{EXAM_TYPE_LABELS[e.type as keyof typeof EXAM_TYPE_LABELS]}</Badge>
+                        <Badge variant="outline" className="text-[10px] mt-1">{examTypeLabels[e.type as keyof typeof examTypeLabels] || e.type}</Badge>
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">
                         <div className="flex items-center gap-1 text-foreground font-medium"><ClipboardList className="h-3 w-3" /> {e.subjectName}</div>

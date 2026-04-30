@@ -2,7 +2,7 @@
 
 import { PageHeader } from '@/components/shared/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -13,13 +13,15 @@ import { useClassrooms } from '@/hooks/use-schools';
 import { useClassTimetable, useCreateTimetable, useUpdateTimetable, useDeleteTimetable } from '@/hooks/use-timetable';
 import { useSubjects } from '@/hooks/use-subjects';
 import { useUsers } from '@/hooks/use-users';
-import { DAYS_OF_WEEK, ACADEMIC_YEARS } from '@/lib/constants';
+import { DAYS_OF_WEEK, DEFAULT_ACADEMIC_YEARS } from '@/lib/constants';
 import { useState, useEffect } from 'react';
+import { cn } from '@/lib/utils';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import type { DayOfWeek, Timetable } from '@/types/timetable.types';
 import { toast } from 'sonner';
+import { useSchoolConfigs } from '@/hooks/use-school-configs';
 
 const schema = z.object({
   dayOfWeek: z.string().min(1, 'Day is required'),
@@ -34,8 +36,11 @@ type FormData = z.infer<typeof schema>;
 
 export default function TimetablePage() {
   const { schoolId } = useAuthStore();
+  const { data: schoolConfigs } = useSchoolConfigs(schoolId || 0);
+  const academicYears = schoolConfigs?.ACADEMIC_YEARS || DEFAULT_ACADEMIC_YEARS;
+
   const [selectedClassId, setSelectedClassId] = useState<string>('');
-  const [selectedYear, setSelectedYear] = useState<string>(ACADEMIC_YEARS[0]);
+  const [selectedYear, setSelectedYear] = useState<string>(academicYears[0]);
   const [open, setOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<Timetable | null>(null);
 
@@ -135,7 +140,7 @@ export default function TimetablePage() {
     <div className="space-y-6">
       <PageHeader title="Timetable" description="Weekly class schedule">
         <Dialog open={open} onOpenChange={(val) => { setOpen(val); if (!val) setEditingEntry(null); }}>
-          <DialogTrigger render={<Button disabled={!selectedClassId} className="gap-2"><Plus className="h-4 w-4" /> Add Period</Button>} />
+          <DialogTrigger render={<button disabled={!selectedClassId} className={cn(buttonVariants({ variant: 'default' }), "gap-2")}><Plus className="h-4 w-4" /> Add Period</button>} />
           <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle>{editingEntry ? 'Edit Timetable Entry' : 'Add Timetable Entry'}</DialogTitle>
@@ -225,7 +230,7 @@ export default function TimetablePage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {ACADEMIC_YEARS.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+              {academicYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>

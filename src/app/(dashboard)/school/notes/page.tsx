@@ -3,7 +3,7 @@
 import { PageHeader } from '@/components/shared/page-header';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,6 +14,7 @@ import { useAuthStore } from '@/store/auth-store';
 import { useNotes, useCreateNote, useUpdateNote, useDeleteNote } from '@/hooks/use-notes';
 import { useSubjects } from '@/hooks/use-subjects';
 import { useState, useEffect } from 'react';
+import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -127,7 +128,7 @@ export default function NotesPage() {
     <div className="space-y-6">
       <PageHeader title="Notes & Content" description="Manage educational resources">
         <Dialog open={open} onOpenChange={(val) => { setOpen(val); if (!val) setEditingNote(null); }}>
-          <DialogTrigger render={<Button className="gap-2"><Plus className="h-4 w-4" /> New Resource</Button>} />
+          <DialogTrigger render={<button className={cn(buttonVariants({ variant: 'default' }), "gap-2")}><Plus className="h-4 w-4" /> New Resource</button>} />
           <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle>{editingNote ? 'Edit Notes / Resource' : 'Upload Notes / Resource'}</DialogTitle>

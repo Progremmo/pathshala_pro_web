@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { StatCard } from '@/components/shared/stat-card';
 import { PageHeader } from '@/components/shared/page-header';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -17,7 +17,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuthStore } from '@/store/auth-store';
-import { FEE_TYPES, FEE_FREQUENCIES, ACADEMIC_YEARS, PAYMENT_STATUS_COLORS } from '@/lib/constants';
+import { DEFAULT_FEE_TYPES, DEFAULT_FEE_FREQUENCIES, DEFAULT_ACADEMIC_YEARS, PAYMENT_STATUS_COLORS } from '@/lib/constants';
 import { formatCurrency } from '@/utils/format';
 import { 
   useFeeStructures, 
@@ -28,7 +28,9 @@ import {
   useDeleteFeeInvoice
 } from '@/hooks/use-fees';
 import { useDashboardStats } from '@/hooks/use-dashboard';
+import { useSchoolConfigs } from '@/hooks/use-school-configs';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 const structureSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -50,10 +52,15 @@ export default function FeeManagementPage() {
   const { data: dashboardData, isLoading: isDashboardLoading } = useDashboardStats(schoolId || 0);
   const { data: structuresData, isLoading: isLoadingStructures } = useFeeStructures(schoolId || 0, { page: 0, size: 50 });
   const { data: invoicesData, isLoading: isLoadingInvoices } = useFeeInvoices(schoolId || 0, { page: 0, size: 50 });
+  const { data: schoolConfigs } = useSchoolConfigs(schoolId || 0);
   
   const stats = dashboardData?.data;
   const structures = structuresData?.data?.content || [];
   const invoices = invoicesData?.data?.content || [];
+
+  const feeTypes = schoolConfigs?.FEE_TYPES || DEFAULT_FEE_TYPES;
+  const feeFrequencies = schoolConfigs?.FEE_FREQUENCIES || DEFAULT_FEE_FREQUENCIES;
+  const academicYears = schoolConfigs?.ACADEMIC_YEARS || DEFAULT_ACADEMIC_YEARS;
 
   const { mutate: createStructure, isPending: isCreating } = useCreateFeeStructure();
   const { mutate: updateStructure, isPending: isUpdating } = useUpdateFeeStructure();
@@ -136,7 +143,7 @@ export default function FeeManagementPage() {
       <PageHeader title="Fee Management" description="Manage fee structures, invoices, and track payments">
         <Link href="/school/fees/reports"><Button variant="outline" className="gap-2"><BarChart3 className="h-4 w-4" /> Reports</Button></Link>
         <Dialog open={open} onOpenChange={(val) => { setOpen(val); if (!val) setEditingStructure(null); }}>
-          <DialogTrigger render={<Button className="gap-2"><Plus className="h-4 w-4" /> New Structure</Button>} />
+          <DialogTrigger render={<button className={cn(buttonVariants({ variant: 'default' }), "gap-2")}><Plus className="h-4 w-4" /> New Structure</button>} />
           <DialogContent className="max-w-lg">
             <DialogHeader><DialogTitle>{editingStructure ? 'Edit Fee Structure' : 'Create Fee Structure'}</DialogTitle></DialogHeader>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-4">
@@ -154,7 +161,7 @@ export default function FeeManagementPage() {
                     render={({ field }) => (
                       <Select value={field.value} onValueChange={field.onChange}>
                         <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
-                        <SelectContent>{FEE_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                        <SelectContent>{feeTypes.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
                       </Select>
                     )}
                   />
@@ -172,7 +179,7 @@ export default function FeeManagementPage() {
                     render={({ field }) => (
                       <Select value={field.value} onValueChange={field.onChange}>
                         <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                        <SelectContent>{FEE_FREQUENCIES.map((f) => <SelectItem key={f} value={f}>{f}</SelectItem>)}</SelectContent>
+                        <SelectContent>{feeFrequencies.map((f) => <SelectItem key={f} value={f}>{f}</SelectItem>)}</SelectContent>
                       </Select>
                     )}
                   />
@@ -189,7 +196,7 @@ export default function FeeManagementPage() {
                     render={({ field }) => (
                       <Select value={field.value} onValueChange={field.onChange}>
                         <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                        <SelectContent>{ACADEMIC_YEARS.map((y) => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
+                        <SelectContent>{academicYears.map((y) => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
                       </Select>
                     )}
                   />

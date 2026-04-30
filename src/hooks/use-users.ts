@@ -48,8 +48,9 @@ export function useToggleUserStatus() {
   return useMutation({
     mutationFn: ({ id, active }: { id: number; active: boolean }) => 
       userService.toggleStatus(id, active),
-    onSuccess: (res) => {
-      toast.success(`User ${res.data.isActive ? 'activated' : 'deactivated'} successfully`);
+    onSuccess: (res, variables) => {
+      const status = res.data?.isActive ?? variables.active;
+      toast.success(`User ${status ? 'activated' : 'deactivated'} successfully`);
       queryClient.invalidateQueries({ queryKey: userKeys.all });
     },
     onError: (error: any) => {

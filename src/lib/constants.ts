@@ -17,12 +17,12 @@ export const ROLE_LABELS = {
   PARENT: 'Parent',
 } as const;
 
-export const ACADEMIC_YEARS = ['2024-25', '2025-26', '2026-27'] as const;
+export const DEFAULT_ACADEMIC_YEARS = ['2024-25', '2025-26', '2026-27'] as const;
 
-export const FEE_TYPES = ['TUITION', 'TRANSPORT', 'LIBRARY', 'LABORATORY', 'SPORTS', 'EXAM', 'ADMISSION', 'OTHER'] as const;
-export const FEE_FREQUENCIES = ['MONTHLY', 'QUARTERLY', 'HALF_YEARLY', 'ANNUALLY', 'ONE_TIME'] as const;
+export const DEFAULT_FEE_TYPES = ['TUITION', 'TRANSPORT', 'LIBRARY', 'LABORATORY', 'SPORTS', 'EXAM', 'ADMISSION', 'OTHER'] as const;
+export const DEFAULT_FEE_FREQUENCIES = ['MONTHLY', 'QUARTERLY', 'HALF_YEARLY', 'ANNUALLY', 'ONE_TIME'] as const;
 
-export const EXAM_TYPE_LABELS: Record<string, string> = {
+export const DEFAULT_EXAM_TYPE_LABELS: Record<string, string> = {
   UNIT_TEST: 'Unit Test',
   MID_TERM: 'Mid Term',
   FINAL_TERM: 'Final Term',

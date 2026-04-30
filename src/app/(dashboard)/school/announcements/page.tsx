@@ -3,7 +3,7 @@
 import { PageHeader } from '@/components/shared/page-header';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,6 +15,7 @@ import { useAnnouncements, useCreateAnnouncement, useUpdateAnnouncement, useDele
 import { useAuthStore } from '@/store/auth-store';
 import { formatDistanceToNow, format } from 'date-fns';
 import { useState, useEffect } from 'react';
+import { cn } from '@/lib/utils';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -106,7 +107,7 @@ export default function AnnouncementsPage() {
     <div className="space-y-6">
       <PageHeader title="Announcements" description="Manage school-wide announcements">
         <Dialog open={open} onOpenChange={(val) => { setOpen(val); if (!val) setEditingAnnouncement(null); }}>
-          <DialogTrigger render={<Button className="gap-2"><Plus className="h-4 w-4" /> New Announcement</Button>} />
+          <DialogTrigger render={<button className={cn(buttonVariants({ variant: 'default' }), "gap-2")}><Plus className="h-4 w-4" /> New Announcement</button>} />
           <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle>{editingAnnouncement ? 'Edit Announcement' : 'Create Announcement'}</DialogTitle>

@@ -13,17 +13,21 @@ import { useFeeReport, useClassAttendanceReport, useStudentPerformanceReport } f
 import { useClassrooms } from '@/hooks/use-schools';
 import { useUsers } from '@/hooks/use-users';
 import { useAuthStore } from '@/store/auth-store';
+import { useSchoolConfigs } from '@/hooks/use-school-configs';
+import { DEFAULT_ACADEMIC_YEARS } from '@/lib/constants';
 import { Loader2, TrendingUp, Users, DollarSign, BookOpen, Calendar as CalendarIcon, Download } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { format, startOfYear, endOfYear } from 'date-fns';
 
-const AVAILABLE_YEARS = [2024, 2025, 2026, 2027];
 const COLORS = ['#10b981', '#f59e0b', '#3b82f6', '#8b5cf6', '#ef4444'];
 
 export default function ReportsPage() {
   const { schoolId } = useAuthStore();
   const [activeTab, setActiveTab] = useState('financial');
+  
+  const { data: schoolConfigs } = useSchoolConfigs(schoolId || 0);
+  const academicYears = schoolConfigs?.ACADEMIC_YEARS || DEFAULT_ACADEMIC_YEARS;
   
   // Financial Filters
   const [feeYear, setFeeYear] = useState<number>(new Date().getFullYear());
@@ -37,7 +41,7 @@ export default function ReportsPage() {
 
   // Academic Filters
   const [selectedStudentId, setSelectedStudentId] = useState<string>('');
-  const [academicYear, setAcademicYear] = useState('2024-25');
+  const [academicYear, setAcademicYear] = useState(academicYears[0]);
 
   // Queries
   const { data: feeRes, isLoading: loadingFee } = useFeeReport(schoolId || 0, feeYear);
@@ -71,11 +75,14 @@ export default function ReportsPage() {
 
   // Attendance Data Prep
   const rawAttendData = (attendRes?.data as Record<string, any>) || {};
-  const attendChartData = Object.entries(rawAttendData).map(([date, stats]: [string, any]) => ({
-    date: format(new Date(date), 'dd MMM'),
-    present: stats.presentCount || 0,
-    absent: stats.absentCount || 0,
-  }));
+  const attendChartData = Object.entries(rawAttendData).map(([dateStr, stats]: [string, any]) => {
+    const d = new Date(dateStr);
+    return {
+      date: isNaN(d.getTime()) ? dateStr : format(d, 'dd MMM'),
+      present: stats.presentCount || 0,
+      absent: stats.absentCount || 0,
+    };
+  });
 
   return (
     <div className="space-y-6">
@@ -101,7 +108,10 @@ export default function ReportsPage() {
               <Select value={String(feeYear)} onValueChange={(v) => v && setFeeYear(Number(v))}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {AVAILABLE_YEARS.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}
+                  {academicYears.map(y => {
+                    const yearOnly = y.split('-')[0];
+                    return <SelectItem key={y} value={yearOnly}>{y}</SelectItem>
+                  })}
                 </SelectContent>
               </Select>
             </div>
@@ -198,8 +208,7 @@ export default function ReportsPage() {
               <Select value={academicYear} onValueChange={(v) => v && setAcademicYear(v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="2024-25">2024-25</SelectItem>
-                  <SelectItem value="2023-24">2023-24</SelectItem>
+                  {academicYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
