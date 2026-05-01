@@ -1,42 +1,77 @@
 import api from '@/lib/axios';
-import { ApiResponse, PaginatedResponse, PaginationParams } from '@/types/api.types';
-import { 
-  FeeStructureRequest, FeeStructureResponse, 
-  FeeInvoiceRequest, FeeInvoiceResponse,
-  RazorpayOrderRequest, PaymentVerifyRequest, PaymentResponse 
+import { ApiResponse, PaginationParams } from '@/types/api.types';
+import {
+  FeeHead, FeeHeadRequest,
+  FeeGroup, FeeGroupRequest,
+  FeeInvoice, FeeAllocationRequest
 } from '@/types/fee.types';
 
 export const feeService = {
-  // Structures
-  createStructure: (schoolId: number, data: FeeStructureRequest) =>
-    api.post<ApiResponse<FeeStructureResponse>>(`/schools/${schoolId}/fees/structures`, data).then((r) => r.data),
+  // Heads
+  getHeads: (schoolId: number) =>
+    api.get<ApiResponse<FeeHead[]>>(`/schools/${schoolId}/fees/heads`),
 
+  createHead: (schoolId: number, data: FeeHeadRequest) =>
+    api.post<ApiResponse<FeeHead>>(`/schools/${schoolId}/fees/heads`, data),
+
+  // Groups
+  getGroups: (schoolId: number) =>
+    api.get<ApiResponse<FeeGroup[]>>(`/schools/${schoolId}/fees/groups`),
+
+  createGroup: (schoolId: number, data: FeeGroupRequest) =>
+    api.post<ApiResponse<FeeGroup>>(`/schools/${schoolId}/fees/groups`, data),
+
+  // Allocations
+  createAllocation: (schoolId: number, data: FeeAllocationRequest) =>
+    api.post<ApiResponse<void>>(`/schools/${schoolId}/fees/allocations`, null, { params: data }),
+
+  // Structures (Legacy/Simple)
   getStructures: (schoolId: number, params?: PaginationParams) =>
-    api.get<ApiResponse<PaginatedResponse<FeeStructureResponse>>>(`/schools/${schoolId}/fees/structures`, { params }).then((r) => r.data),
+    api.get<ApiResponse<any>>(`/schools/${schoolId}/fees/structures`, { params }),
 
-  updateStructure: (schoolId: number, structureId: number, data: FeeStructureRequest) =>
-    api.put<ApiResponse<FeeStructureResponse>>(`/schools/${schoolId}/fees/structures/${structureId}`, data).then((r) => r.data),
+  createStructure: (schoolId: number, data: any) =>
+    api.post<ApiResponse<any>>(`/schools/${schoolId}/fees/structures`, data),
 
-  deleteStructure: (schoolId: number, structureId: number) =>
-    api.delete<ApiResponse<void>>(`/schools/${schoolId}/fees/structures/${structureId}`).then((r) => r.data),
+  updateStructure: (schoolId: number, id: number, data: any) =>
+    api.put<ApiResponse<any>>(`/schools/${schoolId}/fees/structures/${id}`, data),
+
+  deleteStructure: (schoolId: number, id: number) =>
+    api.delete<ApiResponse<void>>(`/schools/${schoolId}/fees/structures/${id}`),
 
   // Invoices
-  createInvoice: (schoolId: number, data: FeeInvoiceRequest) =>
-    api.post<ApiResponse<FeeInvoiceResponse>>(`/schools/${schoolId}/fees/invoices`, data).then((r) => r.data),
+  getInvoices: (schoolId: number, params?: PaginationParams) =>
+    api.get<ApiResponse<any>>(`/schools/${schoolId}/fees/invoices`, { params }),
 
-  getInvoicesBySchool: (schoolId: number, params?: PaginationParams) =>
-    api.get<ApiResponse<PaginatedResponse<FeeInvoiceResponse>>>(`/schools/${schoolId}/fees/invoices`, { params }).then((r) => r.data),
+  deleteInvoice: (schoolId: number, id: number) =>
+    api.delete<ApiResponse<void>>(`/schools/${schoolId}/fees/invoices/${id}`),
 
-  getInvoicesByStudent: (schoolId: number, studentId: number, params?: PaginationParams) =>
-    api.get<ApiResponse<PaginatedResponse<FeeInvoiceResponse>>>(`/schools/${schoolId}/fees/invoices/student/${studentId}`, { params }).then((r) => r.data),
+  generateInvoices: (schoolId: number, params: {
+    classId: number;
+    academicYear: string;
+    month: number;
+    year: number;
+    dueDate: string;
+  }) => api.post<ApiResponse<void>>(`/schools/${schoolId}/fees/generate-class-invoices`, null, { params }),
 
-  deleteInvoice: (schoolId: number, invoiceId: number) =>
-    api.delete<ApiResponse<void>>(`/schools/${schoolId}/fees/invoices/${invoiceId}`).then((r) => r.data),
+  notifyParents: (schoolId: number, params: {
+    classId?: number;
+    academicYear: string;
+  }) => api.post<ApiResponse<void>>(`/schools/${schoolId}/fees/notify-parents`, null, { params }),
 
-  // Payments
-  createOrder: (schoolId: number, data: RazorpayOrderRequest) =>
-    api.post<ApiResponse<any>>(`/schools/${schoolId}/fees/payment/create-order`, data).then((r) => r.data),
+  getStudentInvoices: (schoolId: number, studentId: number) =>
+    api.get<ApiResponse<any>>(`/schools/${schoolId}/fees/invoices/student/${studentId}`),
 
-  verifyPayment: (schoolId: number, data: PaymentVerifyRequest) =>
-    api.post<ApiResponse<PaymentResponse>>(`/schools/${schoolId}/fees/payment/verify`, data).then((r) => r.data),
+  // Razorpay
+  createOrder: (schoolId: number, data: { invoiceId: number; amount: number; notes?: string }) =>
+    api.post<ApiResponse<any>>(`/schools/${schoolId}/fees/payment/create-order`, data),
+
+  verifyPayment: (schoolId: number, data: {
+    razorpayOrderId: string;
+    razorpayPaymentId: string;
+    razorpaySignature: string;
+  }) => api.post<ApiResponse<any>>(`/schools/${schoolId}/fees/payment/verify`, data),
+
+  // Reports
+  getSummary: (schoolId: number, year: number) =>
+    api.get<ApiResponse<any>>(`/schools/${schoolId}/fees/report/summary`, { params: { year } }),
 };

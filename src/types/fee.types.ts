@@ -1,68 +1,72 @@
-export type FeeType = 'TUITION' | 'TRANSPORT' | 'LIBRARY' | 'LABORATORY' | 'SPORTS' | 'EXAM' | 'ADMISSION' | 'OTHER';
-export type FeeFrequency = 'MONTHLY' | 'QUARTERLY' | 'HALF_YEARLY' | 'ANNUALLY' | 'ONE_TIME';
-export type PaymentStatus = 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED' | 'PARTIAL';
+import { ApiResponse } from './api.types';
 
-export interface FeeStructureRequest {
-  name: string;
-  classRoomId: number;
-  academicYear: string;
-  type: FeeType;
-  amount: number;
-  frequency: FeeFrequency;
-  dueDate: string;
-}
-
-export interface FeeStructureResponse {
+export interface FeeHead {
   id: number;
   name: string;
-  classRoomId: number;
-  classRoomName: string;
-  academicYear: string;
-  type: FeeType;
-  amount: number;
-  frequency: FeeFrequency;
-  dueDate: string;
+  description?: string;
+  isMandatory: boolean;
   createdAt: string;
 }
 
-export interface FeeInvoiceRequest {
-  studentId: number;
-  structureId: number;
-  dueDate: string;
-  remarks?: string;
+export interface FeeHeadRequest {
+  name: string;
+  description?: string;
+  isMandatory: boolean;
 }
 
-export interface FeeInvoiceResponse {
+export interface FeeGroupItem {
+  id: number;
+  feeHeadId: number;
+  feeHeadName: string;
+  amount: number;
+}
+
+export interface FeeGroup {
+  id: number;
+  name: string;
+  description?: string;
+  grade?: string;
+  items: FeeGroupItem[];
+}
+
+export interface FeeGroupRequest {
+  name: string;
+  description?: string;
+  grade?: string;
+  items: {
+    feeHeadId: number;
+    amount: number;
+  }[];
+}
+
+export interface FeeInvoice {
   id: number;
   invoiceNumber: string;
+  totalAmount: number;
+  discountAmount: number;
+  fineAmount: number;
+  netAmount: number;
+  paidAmount: number;
+  paymentStatus: 'PENDING' | 'PARTIAL' | 'PAID' | 'FAILED';
+  dueDate: string;
+  periodMonth?: number;
+  periodYear?: number;
+  academicYear: string;
   studentId: number;
   studentName: string;
-  structureName: string;
-  amount: number;
-  paidAmount: number;
-  status: PaymentStatus;
-  dueDate: string;
+  admissionNumber: string;
+  feeStructureName?: string;
   createdAt: string;
+  items?: {
+    id: number;
+    feeHeadName: string;
+    amount: number;
+  }[];
 }
 
-export interface RazorpayOrderRequest {
-  invoiceId: number;
-  amount: number; // in INR
-}
-
-export interface PaymentVerifyRequest {
-  razorpayOrderId: string;
-  razorpayPaymentId: string;
-  razorpaySignature: string;
-  invoiceId: number;
-}
-
-export interface PaymentResponse {
-  id: number;
-  transactionId: string;
-  amount: number;
-  status: PaymentStatus;
-  paymentMethod: string;
-  paymentDate: string;
-  invoiceId: number;
+export interface FeeAllocationRequest {
+  groupId: number;
+  classId?: number;
+  studentId?: number;
+  academicYear: string;
 }

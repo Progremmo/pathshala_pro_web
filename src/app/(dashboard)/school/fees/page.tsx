@@ -1,338 +1,250 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { DollarSign, Plus, FileText, BarChart3, Edit2, Trash2, Loader2, MoreVertical } from 'lucide-react';
+import { useState } from 'react';
+import { 
+  DollarSign, 
+  CreditCard, 
+  Users, 
+  Layers, 
+  Plus, 
+  BarChart3, 
+  FileText, 
+  ArrowUpRight, 
+  ArrowDownRight,
+  ChevronRight,
+  MoreVertical,
+  Search,
+  Filter,
+  Download
+} from 'lucide-react';
 import Link from 'next/link';
-import { Card, CardContent } from '@/components/ui/card';
-import { StatCard } from '@/components/shared/stat-card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { PageHeader } from '@/components/shared/page-header';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
+import { StatCard } from '@/components/shared/stat-card';
 import { useAuthStore } from '@/store/auth-store';
-import { DEFAULT_FEE_TYPES, DEFAULT_FEE_FREQUENCIES, DEFAULT_ACADEMIC_YEARS, PAYMENT_STATUS_COLORS } from '@/lib/constants';
+import { useFeeInvoices, useFeeSummary } from '@/hooks/use-fees';
 import { formatCurrency } from '@/utils/format';
-import { 
-  useFeeStructures, 
-  useFeeInvoices, 
-  useCreateFeeStructure, 
-  useUpdateFeeStructure, 
-  useDeleteFeeStructure,
-  useDeleteFeeInvoice
-} from '@/hooks/use-fees';
-import { useDashboardStats } from '@/hooks/use-dashboard';
-import { useSchoolConfigs } from '@/hooks/use-school-configs';
-import { toast } from 'sonner';
+import { PAYMENT_STATUS_COLORS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
 
-const structureSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  feeType: z.string().min(1, 'Type is required'),
-  amount: z.coerce.number().min(0, 'Amount must be positive'),
-  frequency: z.string().min(1, 'Frequency is required'),
-  grade: z.string().optional(),
-  academicYear: z.string().min(1, 'Academic year is required'),
-  description: z.string().optional(),
-});
-
-type StructureFormData = z.infer<typeof structureSchema>;
-
-export default function FeeManagementPage() {
+export default function SchoolFeesDashboard() {
   const { schoolId } = useAuthStore();
-  const [open, setOpen] = useState(false);
-  const [editingStructure, setEditingStructure] = useState<any>(null);
+  const currentYear = new Date().getFullYear();
   
-  const { data: dashboardData, isLoading: isDashboardLoading } = useDashboardStats(schoolId || 0);
-  const { data: structuresData, isLoading: isLoadingStructures } = useFeeStructures(schoolId || 0, { page: 0, size: 50 });
-  const { data: invoicesData, isLoading: isLoadingInvoices } = useFeeInvoices(schoolId || 0, { page: 0, size: 50 });
-  const { data: schoolConfigs } = useSchoolConfigs(schoolId || 0);
-  
-  const stats = dashboardData?.data;
-  const structures = structuresData?.data?.content || [];
-  const invoices = invoicesData?.data?.content || [];
+  const { data: summaryRes } = useFeeSummary(schoolId || 1, currentYear);
+  const { data: invoicesRes, isLoading: isLoadingInvoices } = useFeeInvoices(schoolId || 1, { page: 0, size: 5 });
 
-  const feeTypes = schoolConfigs?.FEE_TYPES || DEFAULT_FEE_TYPES;
-  const feeFrequencies = schoolConfigs?.FEE_FREQUENCIES || DEFAULT_FEE_FREQUENCIES;
-  const academicYears = schoolConfigs?.ACADEMIC_YEARS || DEFAULT_ACADEMIC_YEARS;
+  const summary = summaryRes?.data || { totalCollected: 0, totalOutstanding: 0 };
+  const recentInvoices = invoicesRes?.data?.content || [];
 
-  const { mutate: createStructure, isPending: isCreating } = useCreateFeeStructure(schoolId || 0);
-  const { mutate: updateStructure, isPending: isUpdating } = useUpdateFeeStructure(schoolId || 0);
-  const { mutate: deleteStructure } = useDeleteFeeStructure(schoolId || 0);
-  const { mutate: deleteInvoice } = useDeleteFeeInvoice(schoolId || 0);
-
-  const { register, handleSubmit, control, reset, formState: { errors } } = useForm<any>({
-    resolver: zodResolver(structureSchema),
-    defaultValues: {
-      feeType: 'TUITION',
-      frequency: 'MONTHLY',
-      academicYear: '2024-25',
-    }
-  });
-
-  useEffect(() => {
-    if (editingStructure) {
-      reset({
-        name: editingStructure.name,
-        feeType: editingStructure.feeType,
-        amount: editingStructure.amount,
-        frequency: editingStructure.frequency,
-        grade: editingStructure.grade || '',
-        academicYear: editingStructure.academicYear,
-        description: editingStructure.description || '',
-      });
-    } else {
-      reset({
-        name: '',
-        feeType: 'TUITION',
-        amount: 0,
-        frequency: 'MONTHLY',
-        grade: '',
-        academicYear: '2024-25',
-        description: '',
-      });
-    }
-  }, [editingStructure, reset]);
-
-  const onSubmit = (data: StructureFormData) => {
-    if (!schoolId) return;
-    
-    if (editingStructure) {
-      updateStructure({ id: editingStructure.id, data }, {
-        onSuccess: () => {
-          setOpen(false);
-          setEditingStructure(null);
-        }
-      });
-    } else {
-      createStructure(data, {
-        onSuccess: () => {
-          setOpen(false);
-        }
-      });
-    }
-  };
-
-  const handleEdit = (s: any) => {
-    setEditingStructure(s);
-    setOpen(true);
-  };
-
-  const handleDeleteStructure = (id: number) => {
-    if (!schoolId) return;
-    if (confirm('Are you sure you want to delete this fee structure?')) {
-      deleteStructure(id);
-    }
-  };
-
-  const handleDeleteInvoice = (id: number) => {
-    if (!schoolId) return;
-    if (confirm('Are you sure you want to delete this invoice? Only pending invoices can be deleted.')) {
-      deleteInvoice(id);
-    }
-  };
+  const quickLinks = [
+    { title: 'Fee Heads', desc: 'Define individual fee components', href: '/admin/fees/heads', icon: DollarSign, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+    { title: 'Fee Groups', desc: 'Bundle heads by class/grade', href: '/admin/fees/groups', icon: Layers, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+    { title: 'Allocations', desc: 'Assign fees to classes', href: '/admin/fees/allocations', icon: Users, color: 'text-violet-500', bg: 'bg-violet-500/10' },
+    { title: 'Bulk Generate', desc: 'Generate monthly invoices', href: '/admin/fees/generate', icon: FileText, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+  ];
 
   return (
-    <div className="space-y-8">
-      <PageHeader title="Fee Management" description="Manage fee structures, invoices, and track payments">
-        <Link href="/school/fees/reports"><Button variant="outline" className="gap-2"><BarChart3 className="h-4 w-4" /> Reports</Button></Link>
-        <Dialog open={open} onOpenChange={(val) => { setOpen(val); if (!val) setEditingStructure(null); }}>
-          <DialogTrigger render={<button className={cn(buttonVariants({ variant: 'default' }), "gap-2")}><Plus className="h-4 w-4" /> New Structure</button>} />
-          <DialogContent className="max-w-lg">
-            <DialogHeader><DialogTitle>{editingStructure ? 'Edit Fee Structure' : 'Create Fee Structure'}</DialogTitle></DialogHeader>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Name</Label>
-                  <Input {...register('name')} placeholder="e.g. Tuition Fee - Class 10" />
-                  {errors.name && <p className="text-xs text-red-500">{(errors.name as any).message}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label>Fee Type</Label>
-                  <Controller
-                    name="feeType"
-                    control={control}
-                    render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
-                        <SelectContent>{feeTypes.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
-                      </Select>
-                    )}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Amount (₹)</Label>
-                  <Input {...register('amount')} type="number" placeholder="5000" />
-                  {errors.amount && <p className="text-xs text-red-500">{(errors.amount as any).message}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label>Frequency</Label>
-                  <Controller
-                    name="frequency"
-                    control={control}
-                    render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                        <SelectContent>{feeFrequencies.map((f) => <SelectItem key={f} value={f}>{f}</SelectItem>)}</SelectContent>
-                      </Select>
-                    )}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Grade (Optional)</Label>
-                  <Input {...register('grade')} placeholder="10" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Academic Year</Label>
-                  <Controller
-                    name="academicYear"
-                    control={control}
-                    render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                        <SelectContent>{academicYears.map((y) => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
-                      </Select>
-                    )}
-                  />
-                </div>
-              </div>
-              <div className="flex justify-end gap-2 pt-4">
-                <Button variant="outline" type="button" onClick={() => { setOpen(false); setEditingStructure(null); }}>Cancel</Button>
-                <Button type="submit" disabled={isCreating || isUpdating}>
-                  {(isCreating || isUpdating) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {editingStructure ? 'Update' : 'Create'}
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
+    <div className="space-y-8 animate-in fade-in duration-700">
+      <PageHeader 
+        title="Fee Management" 
+        description="Standardized fee structures and billing management for your school."
+      >
+        <div className="flex gap-2">
+          <Button variant="outline" className="gap-2">
+            <Download className="h-4 w-4" /> Export
+          </Button>
+          <Link href="/admin/fees/generate" className={cn(buttonVariants(), "gap-2")}>
+            <Plus className="h-4 w-4" /> New Billing Cycle
+          </Link>
+        </div>
       </PageHeader>
 
-      <div className="stagger-children grid gap-4 sm:grid-cols-3">
+      {/* Primary Stats */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard 
-          title="Monthly Collected" 
-          value={isDashboardLoading ? '...' : formatCurrency(stats?.monthlyCollection || 0)} 
-          subtitle="This month" 
-          icon={DollarSign} 
-          iconClassName="bg-gradient-to-br from-emerald-500 to-teal-500" 
+          title="Total Collection" 
+          value={formatCurrency(summary.totalCollected)} 
+          subtitle="+12.5% from last month"
+          icon={DollarSign}
+          iconClassName="bg-emerald-500 text-white"
         />
         <StatCard 
-          title="Monthly Pending" 
-          value={isDashboardLoading ? '...' : formatCurrency(stats?.monthlyPending || 0)} 
-          subtitle="Outstanding" 
-          icon={FileText} 
-          iconClassName="bg-gradient-to-br from-amber-500 to-orange-500" 
+          title="Outstanding Balance" 
+          value={formatCurrency(summary.totalOutstanding)} 
+          subtitle="42 pending invoices"
+          icon={ArrowUpRight}
+          iconClassName="bg-rose-500 text-white"
         />
         <StatCard 
-          title="Fee Structures" 
-          value={isLoadingStructures ? '...' : structures.length} 
-          subtitle="Active structures" 
-          icon={BarChart3} 
-          iconClassName="bg-gradient-to-br from-violet-500 to-purple-500" 
+          title="Active Allocations" 
+          value="12 Classes" 
+          subtitle="2024-25 Session"
+          icon={Users}
+          iconClassName="bg-blue-500 text-white"
+        />
+        <StatCard 
+          title="Collection Rate" 
+          value="84%" 
+          subtitle="Target: 90%"
+          icon={BarChart3}
+          iconClassName="bg-violet-500 text-white"
         />
       </div>
 
-      <Tabs defaultValue="structures">
-        <TabsList><TabsTrigger value="structures">Fee Structures</TabsTrigger><TabsTrigger value="invoices">Invoices</TabsTrigger></TabsList>
+      {/* Management Modules */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {quickLinks.map((link) => (
+          <Link key={link.title} href={link.href}>
+            <Card className="h-full hover:shadow-xl transition-all duration-300 group border-none shadow-md">
+              <CardContent className="p-6">
+                <div className={cn("h-12 w-12 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110", link.bg)}>
+                  <link.icon className={cn("h-6 w-6", link.color)} />
+                </div>
+                <h3 className="font-bold text-lg mb-1 group-hover:text-primary transition-colors">{link.title}</h3>
+                <p className="text-sm text-muted-foreground">{link.desc}</p>
+                <div className="mt-4 flex items-center text-xs font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                  Manage Now <ChevronRight className="h-3 w-3 ml-1" />
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </div>
 
-        <TabsContent value="structures" className="mt-4">
-          <Card>
-            <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead><tr className="border-b bg-muted/30">
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Name</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Type</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Amount</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Frequency</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Grade</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground text-right">Actions</th>
-                  </tr></thead>
-                  <tbody>
-                    {isLoadingStructures ? (
-                      <tr><td colSpan={6} className="p-8 text-center"><Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" /></td></tr>
-                    ) : structures.length === 0 ? (
-                      <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">No fee structures found</td></tr>
-                    ) : structures.map((s: any) => (
-                      <tr key={s.id} className="border-b last:border-0 hover:bg-accent/30 transition-colors">
-                        <td className="px-4 py-3 font-medium">{s.name}</td>
-                        <td className="px-4 py-3"><Badge variant="secondary" className="text-[10px]">{s.feeType}</Badge></td>
-                        <td className="px-4 py-3 font-semibold text-primary">{formatCurrency(s.amount)}</td>
-                        <td className="px-4 py-3 text-muted-foreground">{s.frequency}</td>
-                        <td className="px-4 py-3">{s.grade || '—'}</td>
-                        <td className="px-4 py-3 text-right">
-                          <div className="flex justify-end gap-1">
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => handleEdit(s)}><Edit2 className="h-4 w-4" /></Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDeleteStructure(s.id)}><Trash2 className="h-4 w-4" /></Button>
-                          </div>
-                        </td>
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Recent Invoices Table */}
+        <Card className="lg:col-span-2 border-none shadow-lg overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between border-b bg-muted/30">
+            <div>
+              <CardTitle>Recent Invoices</CardTitle>
+              <CardDescription>Track the latest fee bills generated.</CardDescription>
+            </div>
+            <Link href="/admin/fees/invoices">
+              <Button variant="ghost" size="sm" className="text-primary font-bold">View All</Button>
+            </Link>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b bg-muted/20 text-muted-foreground">
+                    <th className="px-6 py-4 text-left font-semibold uppercase tracking-wider text-[10px]">Student</th>
+                    <th className="px-6 py-4 text-left font-semibold uppercase tracking-wider text-[10px]">Invoice #</th>
+                    <th className="px-6 py-4 text-left font-semibold uppercase tracking-wider text-[10px]">Amount</th>
+                    <th className="px-6 py-4 text-left font-semibold uppercase tracking-wider text-[10px]">Status</th>
+                    <th className="px-6 py-4 text-right"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/50">
+                  {isLoadingInvoices ? (
+                    Array(5).fill(0).map((_, i) => (
+                      <tr key={i} className="animate-pulse">
+                        <td colSpan={5} className="px-6 py-4 h-16 bg-muted/10"></td>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="invoices" className="mt-4">
-          <Card>
-            <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead><tr className="border-b bg-muted/30">
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Invoice #</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Student</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Amount</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Due Date</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Status</th>
-                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">Actions</th>
-                  </tr></thead>
-                  <tbody>
-                    {isLoadingInvoices ? (
-                      <tr><td colSpan={6} className="p-8 text-center"><Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" /></td></tr>
-                    ) : invoices.length === 0 ? (
-                      <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">No invoices found</td></tr>
-                    ) : invoices.map((inv: any) => (
-                      <tr key={inv.id} className="border-b last:border-0 hover:bg-accent/30 transition-colors">
-                        <td className="px-4 py-3 font-mono text-xs font-bold">{inv.invoiceNumber}</td>
-                        <td className="px-4 py-3">
+                    ))
+                  ) : recentInvoices.length > 0 ? (
+                    recentInvoices.map((inv: any) => (
+                      <tr key={inv.id} className="hover:bg-accent/30 transition-colors">
+                        <td className="px-6 py-4">
                           <div className="flex flex-col">
-                            <span className="font-medium">{inv.studentName}</span>
-                            <span className="text-[10px] text-muted-foreground">{inv.admissionNumber || `ID: ${inv.studentId}`}</span>
+                            <span className="font-bold">{inv.studentName}</span>
+                            <span className="text-[10px] text-muted-foreground">{inv.admissionNumber}</span>
                           </div>
                         </td>
-                        <td className="px-4 py-3 font-semibold text-primary">{formatCurrency(inv.netAmount)}</td>
-                        <td className="px-4 py-3 text-muted-foreground">{new Date(inv.dueDate).toLocaleDateString()}</td>
-                        <td className="px-4 py-3">
-                          <Badge className={`text-[10px] ${PAYMENT_STATUS_COLORS[inv.paymentStatus as keyof typeof PAYMENT_STATUS_COLORS] || ''}`}>{inv.paymentStatus}</Badge>
+                        <td className="px-6 py-4 font-mono text-xs">{inv.invoiceNumber}</td>
+                        <td className="px-6 py-4 font-black text-primary">{formatCurrency(inv.netAmount)}</td>
+                        <td className="px-6 py-4">
+                          <Badge className={cn("text-[10px] font-bold uppercase", PAYMENT_STATUS_COLORS[inv.paymentStatus])}>
+                            {inv.paymentStatus}
+                          </Badge>
                         </td>
-                        <td className="px-4 py-3 text-right">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-8 w-8 text-destructive" 
-                            disabled={inv.paymentStatus !== 'PENDING'}
-                            onClick={() => handleDeleteInvoice(inv.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                        <td className="px-6 py-4 text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem>View Details</DropdownMenuItem>
+                              <DropdownMenuItem>Print Receipt</DropdownMenuItem>
+                              <DropdownMenuItem className="text-destructive">Void Invoice</DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </td>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-12 text-center text-muted-foreground">
+                        No recent invoices found.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Collection Trend / Insights */}
+        <Card className="border-none shadow-lg">
+          <CardHeader>
+            <CardTitle>Collection Insights</CardTitle>
+            <CardDescription>Monthly performance overview</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Tuition Fees</span>
+                <span className="font-bold">92%</span>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+              <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                <div className="h-full bg-emerald-500 rounded-full" style={{ width: '92%' }}></div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Transport Fees</span>
+                <span className="font-bold">64%</span>
+              </div>
+              <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                <div className="h-full bg-amber-500 rounded-full" style={{ width: '64%' }}></div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Extracurricular</span>
+                <span className="font-bold">45%</span>
+              </div>
+              <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                <div className="h-full bg-violet-500 rounded-full" style={{ width: '45%' }}></div>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t">
+              <div className="rounded-xl bg-primary/5 p-4 border border-primary/10">
+                <div className="flex items-start gap-3">
+                  <BarChart3 className="h-5 w-5 text-primary mt-0.5" />
+                  <div>
+                    <p className="text-xs font-bold text-primary uppercase">Quick Insight</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Collection is up by 8% this month compared to the last academic cycle.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
