@@ -18,6 +18,7 @@ export interface AuthResponse {
   roles: RoleName[];
   schoolId: number | null;
   schoolName: string | null;
+  classRoomId: number | null;
   expiresIn: number;
 }
 

@@ -2,38 +2,74 @@
 import { PageHeader } from '@/components/shared/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DAYS_OF_WEEK } from '@/lib/constants';
-import { Clock } from 'lucide-react';
-
-const schedule = [
-  { day: 'MONDAY', period: 1, time: '09:00-09:45', subject: 'Mathematics', class: 'Class 10-A' },
-  { day: 'MONDAY', period: 2, time: '09:45-10:30', subject: 'Physics', class: 'Class 12-B' },
-  { day: 'TUESDAY', period: 1, time: '09:00-09:45', subject: 'Mathematics', class: 'Class 11-A' },
-  { day: 'WEDNESDAY', period: 1, time: '09:00-09:45', subject: 'Physics', class: 'Class 10-B' },
-];
+import { useAuthStore } from '@/store/auth-store';
+import { useTeacherTimetable } from '@/hooks/use-timetable';
+import { Loader2, Clock, MapPin } from 'lucide-react';
 
 export default function TeacherTimetable() {
+  const { schoolId, userId } = useAuthStore();
+  
+  const { data: timetableResponse, isLoading } = useTeacherTimetable(
+    schoolId!, 
+    userId!, 
+    '2024-25'
+  );
+  
+  const schedule = timetableResponse?.data || [];
+
   return (
     <div className="space-y-6">
-      <PageHeader title="My Timetable" description="Your weekly class schedule" />
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {DAYS_OF_WEEK.map((day) => {
-          const daySlots = schedule.filter((s) => s.day === day);
-          return (
-            <Card key={day}>
-              <CardHeader className="pb-3"><CardTitle className="text-sm font-semibold">{day}</CardTitle></CardHeader>
-              <CardContent className="space-y-2">
-                {daySlots.length > 0 ? daySlots.map((s, i) => (
-                  <div key={i} className="flex items-center gap-3 rounded-lg border border-border/50 p-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-primary/10 text-xs font-bold text-primary">P{s.period}</div>
-                    <div className="flex-1"><p className="text-sm font-medium">{s.subject}</p><p className="text-xs text-muted-foreground">{s.class}</p></div>
-                    <span className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" />{s.time}</span>
-                  </div>
-                )) : <p className="text-xs text-muted-foreground text-center py-4">No classes</p>}
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+      <PageHeader title="My Schedule" description="Your weekly teaching timetable and assignments" />
+      
+      {isLoading ? (
+        <div className="flex h-64 items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {DAYS_OF_WEEK.map((day) => {
+            const slots = schedule
+              .filter((s) => s.dayOfWeek === day)
+              .sort((a, b) => a.periodNumber - b.periodNumber);
+              
+            return (
+              <Card key={day} className="h-full">
+                <CardHeader className="pb-3 border-b bg-muted/20">
+                  <CardTitle className="text-sm font-bold uppercase tracking-wider">{day}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 pt-4">
+                  {slots.length > 0 ? (
+                    slots.map((s) => (
+                      <div key={s.id} className="rounded-lg border border-border/50 p-3 bg-card hover:shadow-sm transition-shadow">
+                        <div className="flex justify-between items-start mb-2">
+                          <span className="text-sm font-bold text-primary">{s.subjectName}</span>
+                          <span className="text-[10px] font-medium bg-primary/10 text-primary px-1.5 py-0.5 rounded">
+                            P{s.periodNumber}
+                          </span>
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex items-center text-[11px] text-muted-foreground">
+                            <Clock className="h-3 w-3 mr-1" />
+                            {s.startTime} - {s.endTime}
+                          </div>
+                          <div className="flex items-center text-[11px] text-muted-foreground">
+                            <MapPin className="h-3 w-3 mr-1" />
+                            {s.classRoomName}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-8 text-muted-foreground italic">
+                      <p className="text-xs">No classes assigned</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

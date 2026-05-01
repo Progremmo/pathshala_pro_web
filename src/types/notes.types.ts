@@ -1,30 +1,33 @@
-// Matches NotesRequest.java
 export interface NotesRequest {
   title: string;
   description?: string;
   contentUrl: string;
-  contentType: string;
+  fileUrl?: string; // Compatibility
+  contentType: 'PDF' | 'IMAGE' | 'VIDEO' | 'DOC';
   subjectId: number;
+  classRoomId?: number;
   grade?: string;
   academicYear?: string;
-  isVisible?: boolean;
+  isVisible: boolean;
 }
 
-// Notes entity
-export interface Notes {
+export interface NotesResponse {
   id: number;
   title: string;
   description: string | null;
   contentUrl: string;
-  contentType: string;
+  fileUrl: string; // Compatibility
+  contentType: 'PDF' | 'IMAGE' | 'VIDEO' | 'DOC';
+  subjectId: number;
+  subjectName: string;
+  uploadedBy: string;
+  uploadedByName: string; // Name of the uploader
+  uploadedDate: string;
+  classRoomId: number | null;
+  classRoomName: string | null;
   grade: string | null;
   academicYear: string | null;
   isVisible: boolean;
-  schoolId: number;
-  subjectId: number;
-  subjectName: string;
-  uploadedById: number;
-  uploadedByName: string;
-  createdAt: string;
-  updatedAt: string | null;
 }
+
+export type Notes = NotesResponse;

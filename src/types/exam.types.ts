@@ -1,75 +1,61 @@
+// Matches ExamType enum on backend
 export type ExamType = 'UNIT_TEST' | 'MID_TERM' | 'FINAL_TERM' | 'INTERNAL' | 'PRACTICAL' | 'QUIZ' | 'ASSIGNMENT';
 
-// Matches ExamRequest.java
 export interface ExamRequest {
-  name: string;
-  examType: ExamType;
-  examDate: string;
-  startTime?: string;
-  durationMinutes?: number;
-  totalMarks: number;
-  passingMarks: number;
-  academicYear: string;
-  instructions?: string;
+  title: string;
+  type: ExamType;
   classRoomId: number;
   subjectId: number;
+  examDate: string;
+  startTime: string;
+  endTime: string;
+  maxMarks: number;
+  passMarks: number;
+  academicYear: string;
+  description?: string;
 }
 
-// Exam entity
-export interface Exam {
+export interface ExamResponse {
   id: number;
-  name: string;
-  examType: ExamType;
-  examDate: string;
-  startTime: string | null;
-  durationMinutes: number | null;
-  totalMarks: number;
-  passingMarks: number;
-  academicYear: string;
-  instructions: string | null;
-  isResultPublished: boolean;
-  schoolId: number;
+  title: string;
+  type: ExamType;
   classRoomId: number;
+  classRoomName: string;
   subjectId: number;
+  subjectName: string;
+  examDate: string;
+  startTime: string;
+  endTime: string;
+  maxMarks: number;
+  passMarks: number;
+  academicYear: string;
+  description: string | null;
+  published: boolean;
   createdAt: string;
-  updatedAt: string | null;
 }
 
-// Matches MarksEntryRequest.java
 export interface MarksEntryRequest {
   studentId: number;
   examId: number;
-  marksObtained?: number;
+  marksObtained: number;
   grade?: string;
   remarks?: string;
-  isAbsent?: boolean;
+  isAbsent: boolean;
 }
 
-// Marks entity
-export interface Marks {
+export interface MarksResponse {
   id: number;
-  marksObtained: number;
+  studentId: number;
+  studentName: string;
+  examId: number;
+  examTitle: string;
+  subjectName: string;
+  marksObtained: number | null;
+  maxMarks: number;
+  passMarks: number;
   grade: string | null;
   remarks: string | null;
   isAbsent: boolean;
-  examId: number;
-  studentId: number;
-  schoolId: number;
-  enteredBy: number | null;
-  createdAt: string;
-  updatedAt: string | null;
-}
-
-// Exam statistics
-export interface ExamStatistics {
-  examId: number;
-  totalStudents: number;
-  appeared: number;
-  absent: number;
-  passed: number;
-  failed: number;
-  passPercentage: number;
-  averageMarks: number;
-  highestMarks: number;
-  lowestMarks: number;
+  published: boolean;
+  examDate: string;
 }

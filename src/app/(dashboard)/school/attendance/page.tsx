@@ -43,7 +43,7 @@ export default function AttendancePage() {
   );
   
   const { data: studentsData, isLoading: isLoadingStudents } = useClassStudents(Number(selectedClass));
-  const { mutate: markAttendance, isPending: isSubmitting } = useMarkAttendance();
+  const { mutate: markAttendance, isPending: isSubmitting } = useMarkAttendance(schoolId || 0);
 
   useEffect(() => {
     const existing = existingAttendanceData?.data || [];
@@ -82,16 +82,13 @@ export default function AttendancePage() {
     if (!schoolId || !selectedClass) return;
     
     markAttendance({
-      schoolId,
-      data: {
-        classRoomId: Number(selectedClass),
-        attendanceDate: today,
-        records: attendanceRecords.map(r => ({
-          studentId: r.studentId,
-          status: r.status,
-          remarks: r.remarks,
-        })),
-      }
+      classRoomId: Number(selectedClass),
+      attendanceDate: today,
+      records: attendanceRecords.map(r => ({
+        studentId: r.studentId,
+        status: r.status,
+        remarks: r.remarks,
+      })),
     }, {
       onSuccess: () => {
         setIsMarking(false);

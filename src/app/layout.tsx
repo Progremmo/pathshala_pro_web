@@ -33,6 +33,7 @@ export default function RootLayout({
         <ThemeProvider>
           <QueryProvider>
             <TooltipProvider>
+              <script src="https://checkout.razorpay.com/v1/checkout.js" async />
               {children}
               <Toaster richColors position="top-right" />
             </TooltipProvider>

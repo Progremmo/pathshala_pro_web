@@ -60,9 +60,9 @@ export default function TimetablePage() {
   );
   const periods = timetableRes?.data || [];
 
-  const { mutate: createEntry, isPending: isCreating } = useCreateTimetable();
-  const { mutate: updateEntry, isPending: isUpdating } = useUpdateTimetable();
-  const { mutate: deleteEntry } = useDeleteTimetable();
+  const { mutate: createEntry, isPending: isCreating } = useCreateTimetable(schoolId || 0);
+  const { mutate: updateEntry, isPending: isUpdating } = useUpdateTimetable(schoolId || 0);
+  const { mutate: deleteEntry } = useDeleteTimetable(schoolId || 0);
 
   const { register, handleSubmit, control, reset, formState: { errors } } = useForm<any>({
     resolver: zodResolver(schema),
@@ -103,14 +103,14 @@ export default function TimetablePage() {
     };
 
     if (editingEntry) {
-      updateEntry({ schoolId, entryId: editingEntry.id, data: payload as any }, {
+      updateEntry({ id: editingEntry.id, data: payload as any }, {
         onSuccess: () => {
           setOpen(false);
           setEditingEntry(null);
         }
       });
     } else {
-      createEntry({ schoolId, data: payload as any }, {
+      createEntry(payload as any, {
         onSuccess: () => {
           setOpen(false);
         }
@@ -126,13 +126,7 @@ export default function TimetablePage() {
   const handleDelete = (entry: Timetable) => {
     if (!schoolId) return;
     if (confirm('Are you sure you want to delete this timetable entry?')) {
-      deleteEntry({ 
-        schoolId, 
-        entryId: entry.id, 
-        classRoomId: entry.classRoomId, 
-        teacherId: entry.teacherId, 
-        academicYear: entry.academicYear 
-      });
+      deleteEntry(entry.id);
     }
   };
 

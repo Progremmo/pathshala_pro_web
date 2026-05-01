@@ -57,10 +57,10 @@ export default function ExamsPage() {
   const examTypeLabels = schoolConfigs?.EXAM_TYPES || DEFAULT_EXAM_TYPE_LABELS;
   const academicYears = schoolConfigs?.ACADEMIC_YEARS || DEFAULT_ACADEMIC_YEARS;
 
-  const { mutate: createExam, isPending: isCreating } = useCreateExam();
-  const { mutate: updateExam, isPending: isUpdating } = useUpdateExam();
-  const { mutate: deleteExam } = useDeleteExam();
-  const { mutate: publishResults } = usePublishResults();
+  const { mutate: createExam, isPending: isCreating } = useCreateExam(schoolId || 0);
+  const { mutate: updateExam, isPending: isUpdating } = useUpdateExam(schoolId || 0);
+  const { mutate: deleteExam } = useDeleteExam(schoolId || 0);
+  const { mutate: publishResults } = usePublishResults(schoolId || 0);
 
   const { register, handleSubmit, control, reset, formState: { errors } } = useForm<any>({
     resolver: zodResolver(schema),
@@ -105,14 +105,15 @@ export default function ExamsPage() {
   const onSubmit = (data: FormData) => {
     if (!schoolId) return;
     if (editingExam) {
-      updateExam({ schoolId, examId: editingExam.id, data: data as any }, {
+      updateExam({ id: editingExam.id, data: data as any }, {
         onSuccess: () => {
           setOpen(false);
           setEditingExam(null);
+          reset();
         }
       });
     } else {
-      createExam({ schoolId, data: data as any }, {
+      createExam(data as any, {
         onSuccess: () => {
           setOpen(false);
           reset();
@@ -129,14 +130,14 @@ export default function ExamsPage() {
   const handleDelete = (id: number) => {
     if (!schoolId) return;
     if (confirm('Are you sure you want to delete this exam?')) {
-      deleteExam({ schoolId, examId: id });
+      deleteExam(id);
     }
   };
 
   const handlePublish = (id: number) => {
     if (!schoolId) return;
     if (confirm('Are you sure you want to publish results? This cannot be undone.')) {
-      publishResults({ schoolId, examId: id });
+      publishResults(id);
     }
   };
 

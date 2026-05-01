@@ -1,7 +1,6 @@
 export type AttendanceStatus = 'PRESENT' | 'ABSENT' | 'LATE' | 'HALF_DAY' | 'HOLIDAY' | 'LEAVE' | 'EXCUSED';
 
-// Matches AttendanceRequest.java
-export interface StudentAttendanceRecord {
+export interface StudentAttendance {
   studentId: number;
   status: AttendanceStatus;
   remarks?: string;
@@ -11,30 +10,24 @@ export interface AttendanceRequest {
   classRoomId: number;
   attendanceDate: string;
   subjectId?: number;
-  records: StudentAttendanceRecord[];
+  records: StudentAttendance[];
 }
 
-// Attendance entity
-export interface Attendance {
+export interface AttendanceResponse {
   id: number;
+  studentId: number;
+  studentName: string;
+  classRoomId: number;
+  classRoomName: string;
   attendanceDate: string;
   status: AttendanceStatus;
   remarks: string | null;
-  schoolId: number;
-  studentId: number;
-  classRoomId: number;
-  subjectId: number | null;
-  markedBy: number | null;
-  createdAt: string;
 }
 
-// Attendance stats
 export interface AttendanceStats {
   totalDays: number;
-  present: number;
-  absent: number;
-  late: number;
-  halfDay: number;
-  leave: number;
+  presentDays: number;
+  absentDays: number;
+  lateDays: number;
   attendancePercentage: number;
 }

@@ -1,33 +1,27 @@
 export type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
 
-// Matches TimetableRequest.java
 export interface TimetableRequest {
-  dayOfWeek: DayOfWeek;
-  startTime: string;
-  endTime: string;
-  periodNumber?: number;
-  academicYear: string;
   classRoomId: number;
   subjectId: number;
   teacherId: number;
+  dayOfWeek: DayOfWeek;
+  startTime: string; // "HH:mm"
+  endTime: string;   // "HH:mm"
+  periodNumber: number;
+  academicYear: string;
 }
 
-// Timetable entity
-export interface Timetable {
+export interface TimetableResponse {
   id: number;
-  dayOfWeek: DayOfWeek;
-  startTime: string;
-  endTime: string;
-  periodNumber: number | null;
-  academicYear: string;
-  schoolId: number;
   classRoomId: number;
   classRoomName: string;
   subjectId: number;
   subjectName: string;
-  subjectCode: string;
   teacherId: number;
   teacherName: string;
-  createdAt: string;
-  updatedAt: string | null;
+  dayOfWeek: DayOfWeek;
+  startTime: string;
+  endTime: string;
+  periodNumber: number;
+  academicYear: string;
 }

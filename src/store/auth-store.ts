@@ -8,9 +8,10 @@ interface AuthState {
   userId: number | null;
   email: string | null;
   fullName: string | null;
-  roles: RoleName[];
+    roles: RoleName[];
   schoolId: number | null;
   schoolName: string | null;
+  classRoomId: number | null;
   isAuthenticated: boolean;
 
   // Actions
@@ -30,6 +31,7 @@ export const useAuthStore = create<AuthState>()(
       roles: [],
       schoolId: null,
       schoolName: null,
+      classRoomId: null,
       isAuthenticated: false,
 
       setAuth: (response: AuthResponse) => {
@@ -47,6 +49,7 @@ export const useAuthStore = create<AuthState>()(
           roles: response.roles,
           schoolId: response.schoolId,
           schoolName: response.schoolName,
+          classRoomId: response.classRoomId,
           isAuthenticated: true,
         });
       },
@@ -65,6 +68,7 @@ export const useAuthStore = create<AuthState>()(
           roles: [],
           schoolId: null,
           schoolName: null,
+          classRoomId: null,
           isAuthenticated: false,
         });
       },
@@ -88,6 +92,7 @@ export const useAuthStore = create<AuthState>()(
         roles: state.roles,
         schoolId: state.schoolId,
         schoolName: state.schoolName,
+        classRoomId: state.classRoomId,
         isAuthenticated: state.isAuthenticated,
       }),
     }

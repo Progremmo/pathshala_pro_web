@@ -62,10 +62,10 @@ export default function FeeManagementPage() {
   const feeFrequencies = schoolConfigs?.FEE_FREQUENCIES || DEFAULT_FEE_FREQUENCIES;
   const academicYears = schoolConfigs?.ACADEMIC_YEARS || DEFAULT_ACADEMIC_YEARS;
 
-  const { mutate: createStructure, isPending: isCreating } = useCreateFeeStructure();
-  const { mutate: updateStructure, isPending: isUpdating } = useUpdateFeeStructure();
-  const { mutate: deleteStructure } = useDeleteFeeStructure();
-  const { mutate: deleteInvoice } = useDeleteFeeInvoice();
+  const { mutate: createStructure, isPending: isCreating } = useCreateFeeStructure(schoolId || 0);
+  const { mutate: updateStructure, isPending: isUpdating } = useUpdateFeeStructure(schoolId || 0);
+  const { mutate: deleteStructure } = useDeleteFeeStructure(schoolId || 0);
+  const { mutate: deleteInvoice } = useDeleteFeeInvoice(schoolId || 0);
 
   const { register, handleSubmit, control, reset, formState: { errors } } = useForm<any>({
     resolver: zodResolver(structureSchema),
@@ -104,14 +104,14 @@ export default function FeeManagementPage() {
     if (!schoolId) return;
     
     if (editingStructure) {
-      updateStructure({ schoolId, structureId: editingStructure.id, data }, {
+      updateStructure({ id: editingStructure.id, data }, {
         onSuccess: () => {
           setOpen(false);
           setEditingStructure(null);
         }
       });
     } else {
-      createStructure({ schoolId, data }, {
+      createStructure(data, {
         onSuccess: () => {
           setOpen(false);
         }
@@ -127,14 +127,14 @@ export default function FeeManagementPage() {
   const handleDeleteStructure = (id: number) => {
     if (!schoolId) return;
     if (confirm('Are you sure you want to delete this fee structure?')) {
-      deleteStructure({ schoolId, structureId: id });
+      deleteStructure(id);
     }
   };
 
   const handleDeleteInvoice = (id: number) => {
     if (!schoolId) return;
     if (confirm('Are you sure you want to delete this invoice? Only pending invoices can be deleted.')) {
-      deleteInvoice({ schoolId, invoiceId: id });
+      deleteInvoice(id);
     }
   };
 
