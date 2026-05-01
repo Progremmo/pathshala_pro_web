@@ -28,18 +28,18 @@ export default function StudentDashboard() {
   const { data: notificationsData } = useUnreadCount(schoolId || 0);
 
   const stats = attendanceData?.data;
-  const attendancePercentage = stats ? Math.round((stats.present / stats.totalDays) * 100) : 0;
+  const attendancePercentage = stats ? Math.round((stats.presentDays / stats.totalDays) * 100) : 0;
   
   const chartData = [
-    { name: 'Present', value: stats?.present || 0, color: '#10b981' },
-    { name: 'Absent', value: (stats?.totalDays || 0) - (stats?.present || 0), color: '#ef4444' },
+    { name: 'Present', value: stats?.presentDays || 0, color: '#10b981' },
+    { name: 'Absent', value: (stats?.totalDays || 0) - (stats?.presentDays || 0), color: '#ef4444' },
   ];
 
   // Calculate pending fees
   const invoices = invoicesData?.data?.content || [];
   const pendingFees = invoices
-    .filter(inv => inv.paymentStatus !== 'PAID')
-    .reduce((sum, inv) => sum + (inv.netAmount - inv.paidAmount), 0);
+    .filter(inv => inv.status !== 'PAID')
+    .reduce((sum, inv) => sum + (inv.amount - inv.paidAmount), 0);
 
   // Upcoming exams
   const upcomingExams = (examsData?.data?.content || [])
@@ -69,7 +69,7 @@ export default function StudentDashboard() {
                   </Pie></PieChart>
                 </ResponsiveContainer>
                 <p className="text-3xl font-bold text-emerald-500">{attendancePercentage}%</p>
-                <p className="text-xs text-muted-foreground mt-1">{stats.present}/{stats.totalDays} days present</p>
+                <p className="text-xs text-muted-foreground mt-1">{stats.presentDays}/{stats.totalDays} days present</p>
               </>
             ) : (
               <div className="h-[180px] flex items-center justify-center text-muted-foreground text-sm">No attendance data</div>
@@ -92,9 +92,9 @@ export default function StudentDashboard() {
                 <div key={exam.id} className="flex items-center justify-between rounded-lg border border-border/50 p-4 hover:bg-accent/30 transition-colors">
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/10"><FileText className="h-5 w-5 text-amber-500" /></div>
-                    <div><p className="text-sm font-medium">{exam.name}</p><p className="text-xs text-muted-foreground">{new Date(exam.examDate).toLocaleDateString()}</p></div>
+                    <div><p className="text-sm font-medium">{exam.title}</p><p className="text-xs text-muted-foreground">{new Date(exam.examDate).toLocaleDateString()}</p></div>
                   </div>
-                  <Badge variant="outline" className="text-[10px]">{exam.examType}</Badge>
+                  <Badge variant="outline" className="text-[10px]">{exam.type}</Badge>
                 </div>
               ))
             ) : (

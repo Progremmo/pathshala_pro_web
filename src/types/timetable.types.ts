@@ -25,3 +25,5 @@ export interface TimetableResponse {
   periodNumber: number;
   academicYear: string;
 }
+
+export type Timetable = TimetableResponse;
