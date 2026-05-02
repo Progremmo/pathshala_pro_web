@@ -22,6 +22,9 @@ export const feeService = {
     api.post<ApiResponse<FeeGroup>>(`/schools/${schoolId}/fees/groups`, data),
 
   // Allocations
+  getAllocations: (schoolId: number) =>
+    api.get<ApiResponse<FeeAllocation[]>>(`/schools/${schoolId}/fees/allocations`),
+
   createAllocation: (schoolId: number, data: FeeAllocationRequest) =>
     api.post<ApiResponse<void>>(`/schools/${schoolId}/fees/allocations`, null, { params: data }),
 

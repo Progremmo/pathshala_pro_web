@@ -70,3 +70,16 @@ export interface FeeAllocationRequest {
   studentId?: number;
   academicYear: string;
 }
+
+export interface FeeAllocation {
+  id: number;
+  groupId: number;
+  groupName: string;
+  classId?: number;
+  className?: string;
+  section?: string;
+  studentId?: number;
+  studentName?: string;
+  academicYear: string;
+  createdAt: string;
+}

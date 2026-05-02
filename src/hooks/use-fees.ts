@@ -110,11 +110,21 @@ export function useCreateFeeGroup(schoolId: number) {
   });
 }
 
+export function useFeeAllocations(schoolId: number) {
+  return useQuery({
+    queryKey: ['fees', 'allocations', schoolId],
+    queryFn: () => feeService.getAllocations(schoolId),
+    enabled: !!schoolId,
+  });
+}
+
 export function useCreateFeeAllocation(schoolId: number) {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: FeeAllocationRequest) => feeService.createAllocation(schoolId, data),
     onSuccess: () => {
       toast.success('Fee allocated successfully');
+      queryClient.invalidateQueries({ queryKey: ['fees', 'allocations', schoolId] });
     },
   });
 }

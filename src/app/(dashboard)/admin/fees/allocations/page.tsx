@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { useAuthStore } from '@/store/auth-store';
-import { useFeeGroups, useCreateFeeAllocation } from '@/hooks/use-fees';
+import { useFeeGroups, useCreateFeeAllocation, useFeeAllocations } from '@/hooks/use-fees';
 import { useClassrooms } from '@/hooks/use-schools';
 import { toast } from 'sonner';
 import { 
@@ -38,6 +38,7 @@ export default function FeeAllocationsPage() {
   const { schoolId } = useAuthStore();
   const { data: groupsRes } = useFeeGroups(schoolId || 1);
   const { data: classroomsRes } = useClassrooms(schoolId || 1);
+  const { data: allocationsRes, isLoading: isLoadingAllocations } = useFeeAllocations(schoolId || 1);
   const allocateMutation = useCreateFeeAllocation(schoolId || 1);
   
   const [open, setOpen] = useState(false);
@@ -148,36 +149,40 @@ export default function FeeAllocationsPage() {
           </CardHeader>
           <CardContent className="p-0">
             <div className="divide-y divide-border/50">
-              {classrooms.map((cls: any) => (
-                <div key={cls.id} className="flex items-center justify-between p-6 hover:bg-accent/20 transition-colors group">
-                  <div className="flex items-center gap-6">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary group-hover:scale-110 transition-transform">
-                      <School className="h-7 w-7" />
+              {isLoadingAllocations ? (
+                <div className="p-12 flex justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+              ) : allocationsRes?.data && allocationsRes.data.length > 0 ? (
+                allocationsRes.data.map((alloc: any) => (
+                  <div key={alloc.id} className="flex items-center justify-between p-6 hover:bg-accent/20 transition-colors group">
+                    <div className="flex items-center gap-6">
+                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary group-hover:scale-110 transition-transform">
+                        <School className="h-7 w-7" />
+                      </div>
+                      <div className="space-y-1">
+                        <h4 className="font-bold text-lg">
+                          {alloc.className ? `${alloc.className} - ${alloc.section}` : alloc.studentName}
+                        </h4>
+                        <div className="flex gap-4">
+                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Calendar className="h-3 w-3" /> {alloc.academicYear}
+                          </p>
+                          <Badge variant="outline" className="text-[10px] bg-primary/5">{alloc.className ? 'Classroom' : 'Student'}</Badge>
+                        </div>
+                      </div>
                     </div>
-                    <div className="space-y-1">
-                      <h4 className="font-bold text-lg">{cls.name} - {cls.section}</h4>
-                      <div className="flex gap-4">
-                        <p className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Users className="h-3 w-3" /> {cls.students?.length || 0} Students
-                        </p>
-                        <p className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Calendar className="h-3 w-3" /> {cls.academicYear}
-                        </p>
+                    <div className="flex gap-3">
+                      <div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-2 text-center min-w-[150px]">
+                        <p className="text-[10px] font-bold text-primary uppercase">Assigned Group</p>
+                        <p className="text-sm font-semibold">{alloc.groupName}</p>
                       </div>
                     </div>
                   </div>
-                  <div className="flex gap-3">
-                    {/* In a real app, I'd filter allocations per class here */}
-                    <div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-2 text-center">
-                      <p className="text-[10px] font-bold text-primary uppercase">Assigned Group</p>
-                      <p className="text-sm font-semibold">Standard Monthly</p>
-                    </div>
-                    <Button variant="ghost" size="icon">
-                      <Plus className="h-4 w-4 text-muted-foreground" />
-                    </Button>
-                  </div>
+                ))
+              ) : (
+                <div className="p-12 text-center text-muted-foreground">
+                  No allocations found. Create one to get started.
                 </div>
-              ))}
+              )}
             </div>
           </CardContent>
         </Card>
