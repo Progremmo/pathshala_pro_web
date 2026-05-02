@@ -157,6 +157,14 @@ export function useFeeSummary(schoolId: number, year: number) {
   });
 }
 
+export function useStudentInvoices(schoolId: number, studentId: number, params?: any) {
+  return useQuery({
+    queryKey: [...feeKeys.all, 'invoices', 'student', schoolId, studentId, params],
+    queryFn: () => feeService.getStudentInvoices(schoolId, studentId, params),
+    enabled: !!schoolId && !!studentId,
+  });
+}
+
 export function useCreatePaymentOrder(schoolId: number) {
   return useMutation({
     mutationFn: (data: { invoiceId: number; amount: number; notes?: string }) => feeService.createOrder(schoolId, data),

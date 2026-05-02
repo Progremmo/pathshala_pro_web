@@ -26,6 +26,7 @@ import { useAuthStore } from '@/store/auth-store';
 import { useFeeGroups, useCreateFeeAllocation, useFeeAllocations } from '@/hooks/use-fees';
 import { useClassrooms } from '@/hooks/use-schools';
 import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
 import { 
   Select, 
   SelectContent, 

@@ -38,8 +38,8 @@ export default function StudentDashboard() {
   // Calculate pending fees
   const invoices = invoicesData?.data?.content || [];
   const pendingFees = invoices
-    .filter(inv => inv.status !== 'PAID')
-    .reduce((sum, inv) => sum + (inv.amount - inv.paidAmount), 0);
+    .filter((inv: any) => inv.paymentStatus !== 'PAID')
+    .reduce((sum: number, inv: any) => sum + (inv.netAmount - inv.paidAmount), 0);
 
   // Upcoming exams
   const upcomingExams = (examsData?.data?.content || [])

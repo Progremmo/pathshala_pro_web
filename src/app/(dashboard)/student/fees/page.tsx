@@ -14,7 +14,7 @@ import { useMemo } from 'react';
 
 export default function StudentFeesPage() {
   const { schoolId, userId, fullName, email } = useAuthStore();
-  
+
   const { data: invoicesResponse, isLoading } = useFeeInvoices(schoolId!, userId!);
   const invoices = invoicesResponse?.data?.content || [];
 
@@ -22,15 +22,15 @@ export default function StudentFeesPage() {
   const verifyPayment = useVerifyPayment(schoolId!);
 
   const stats = useMemo(() => {
-    return invoices.reduce((acc, inv) => {
-      if (inv.status === 'PAID') {
-        acc.paid += inv.amount;
-      } else if (inv.status === 'PENDING' || inv.status === 'PARTIAL') {
-        acc.due += (inv.amount - inv.paidAmount);
+    return invoices.reduce((acc: any, inv: any) => {
+      if (inv.paymentStatus === 'PAID') {
+        acc.paid += inv.netAmount;
+      } else if (inv.paymentStatus === 'PENDING' || inv.paymentStatus === 'PARTIAL') {
+        acc.due += (inv.netAmount - inv.paidAmount);
       }
-      acc.total += inv.amount;
+      acc.total += inv.netAmount;
       return acc;
-    }, { paid: 0, due: 0, total: 0 });
+    }, { paid: 0, due: 0, total: 0 } as { paid: number; due: number; total: number });
   }, [invoices]);
 
   const handlePayment = async (invoiceId: number, amount: number) => {
@@ -43,7 +43,7 @@ export default function StudentFeesPage() {
     createOrder.mutate({ invoiceId, amount }, {
       onSuccess: (orderResponse) => {
         const orderData = orderResponse.data;
-        
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const rzp = new (window as any).Razorpay({
           key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
@@ -121,14 +121,14 @@ export default function StudentFeesPage() {
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : invoices.length > 0 ? (
-            invoices.map((inv) => (
+            invoices.map((inv: any) => (
               <div key={inv.id} className="flex items-center justify-between rounded-lg border border-border/50 p-4 hover:bg-accent/30 transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
                     <CreditCard className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium">{inv.structureName || 'General Fee'}</p>
+                    <p className="text-sm font-medium">{inv.feeStructureName || 'General Fee'}</p>
                     <p className="text-xs text-muted-foreground">
                       {inv.invoiceNumber} • Due: {inv.dueDate}
                     </p>
@@ -136,20 +136,20 @@ export default function StudentFeesPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="text-right mr-4">
-                    <p className="text-sm font-bold">{formatCurrency(inv.amount)}</p>
+                    <p className="text-sm font-bold">{formatCurrency(inv.netAmount)}</p>
                     {inv.paidAmount > 0 && (
                       <p className="text-[10px] text-emerald-600">Paid: {formatCurrency(inv.paidAmount)}</p>
                     )}
                   </div>
-                  <Badge variant="outline" className={`text-[10px] ${PAYMENT_STATUS_COLORS[inv.status] || ''}`}>
-                    {inv.status}
+                  <Badge variant="outline" className={`text-[10px] ${PAYMENT_STATUS_COLORS[inv.paymentStatus] || ''}`}>
+                    {inv.paymentStatus}
                   </Badge>
-                  {inv.status !== 'PAID' && (
-                    <Button 
-                      size="sm" 
-                      className="gap-1.5 text-xs" 
+                  {inv.paymentStatus !== 'PAID' && (
+                    <Button
+                      size="sm"
+                      className="gap-1.5 text-xs"
                       disabled={createOrder.isPending}
-                      onClick={() => handlePayment(inv.id, inv.amount - inv.paidAmount)}
+                      onClick={() => handlePayment(inv.id, inv.netAmount - inv.paidAmount)}
                     >
                       {createOrder.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <CreditCard className="h-3 w-3" />}
                       Pay Now
