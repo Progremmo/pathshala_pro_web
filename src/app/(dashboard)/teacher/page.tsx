@@ -9,17 +9,20 @@ import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/auth-store';
 import { useTeacherTimetable } from '@/hooks/use-timetable';
 import { useUpcomingClasses } from '@/hooks/use-online-classes';
+import { useTeacherDashboardStats } from '@/hooks/use-dashboard';
 import Link from 'next/link';
 import { format } from 'date-fns';
 
 export default function TeacherDashboard() {
   const { fullName, schoolId, userId } = useAuthStore();
-  const currentYear = new Date().getFullYear().toString() + '-' + (new Date().getFullYear() + 1).toString();
+  const currentYear = '2024-25'; // TODO: Get from config
   const { data: timetableData, isLoading: isTimetableLoading } = useTeacherTimetable(schoolId || 0, userId || 0, currentYear);
   const { data: upcomingClassesData, isLoading: isClassesLoading } = useUpcomingClasses(schoolId || 0, 7);
+  const { data: teacherStats, isLoading: isStatsLoading } = useTeacherDashboardStats(schoolId || 0, userId || 0);
 
   const todaySchedule = timetableData?.data || [];
-  const upcomingClasses = upcomingClassesData?.data || [];
+  const stats = teacherStats?.data;
+  const pendingTasks = stats?.pendingTasks || [];
 
   return (
     <div className="space-y-8">
@@ -29,14 +32,14 @@ export default function TeacherDashboard() {
       />
 
       <div className="stagger-children grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard title="Classes Today" value={todaySchedule.length} subtitle="Scheduled" icon={Calendar}
-          iconClassName="bg-gradient-to-br from-blue-500 to-cyan-500" />
-        <StatCard title="Pending Attendance" value={0} subtitle="Classes to mark" icon={UserCheck}
-          iconClassName="bg-gradient-to-br from-amber-500 to-orange-500" />
-        <StatCard title="Notes Uploaded" value={18} subtitle="This semester" icon={BookOpen}
-          iconClassName="bg-gradient-to-br from-emerald-500 to-teal-500" />
-        <StatCard title="Upcoming Classes" value={upcomingClasses.length} subtitle="Online sessions" icon={Video}
-          iconClassName="bg-gradient-to-br from-violet-500 to-purple-500" />
+        <StatCard title="Classes Today" value={stats?.classesToday ?? 0} subtitle="Scheduled" icon={Calendar}
+          iconClassName="bg-gradient-to-br from-blue-500 to-cyan-500" loading={isStatsLoading} />
+        <StatCard title="Pending Attendance" value={stats?.pendingAttendance ?? 0} subtitle="Classes to mark" icon={UserCheck}
+          iconClassName="bg-gradient-to-br from-amber-500 to-orange-500" loading={isStatsLoading} />
+        <StatCard title="Notes Uploaded" value={stats?.notesUploaded ?? 0} subtitle="Total resources" icon={BookOpen}
+          iconClassName="bg-gradient-to-br from-emerald-500 to-teal-500" loading={isStatsLoading} />
+        <StatCard title="Upcoming Classes" value={stats?.upcomingOnlineClasses ?? 0} subtitle="Online sessions" icon={Video}
+          iconClassName="bg-gradient-to-br from-violet-500 to-purple-500" loading={isStatsLoading} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -83,25 +86,33 @@ export default function TeacherDashboard() {
             <CardDescription>Items requiring your attention</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            {[
-              { title: 'Mark attendance for Class 10-A', type: 'Attendance', urgent: true, icon: UserCheck },
-              { title: 'Mark attendance for Class 12-B', type: 'Attendance', urgent: true, icon: UserCheck },
-              { title: 'Enter marks for Unit Test 2 - Maths', type: 'Marks', urgent: false, icon: ClipboardList },
-              { title: 'Upload Chapter 7 notes', type: 'Notes', urgent: false, icon: BookOpen },
-            ].map((task, i) => (
-              <div key={i} className="flex items-center justify-between rounded-lg border border-border/50 p-3 hover:bg-accent/30 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
-                    <task.icon className="h-4 w-4 text-muted-foreground" />
+            {isStatsLoading ? (
+               <div className="space-y-3">
+                 {[1, 2, 3].map(i => <div key={i} className="h-14 w-full animate-pulse bg-muted rounded-lg" />)}
+               </div>
+            ) : pendingTasks.length > 0 ? (
+              pendingTasks.map((task, i) => {
+                const Icon = task.type === 'Attendance' ? UserCheck : task.type === 'Marks' ? ClipboardList : BookOpen;
+                return (
+                  <div key={i} className="flex items-center justify-between rounded-lg border border-border/50 p-3 hover:bg-accent/30 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
+                        <Icon className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                      <p className="text-sm">{task.title}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {task.urgent && <Badge variant="destructive" className="text-[10px]">Urgent</Badge>}
+                      <Badge variant="secondary" className="text-[10px]">{task.type}</Badge>
+                    </div>
                   </div>
-                  <p className="text-sm">{task.title}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  {task.urgent && <Badge variant="destructive" className="text-[10px]">Urgent</Badge>}
-                  <Badge variant="secondary" className="text-[10px]">{task.type}</Badge>
-                </div>
+                );
+              })
+            ) : (
+              <div className="text-center py-10 text-sm text-muted-foreground border border-dashed rounded-lg">
+                All caught up! No pending tasks.
               </div>
-            ))}
+            )}
             <Button variant="outline" className="w-full mt-2">View All Tasks</Button>
           </CardContent>
         </Card>

@@ -19,6 +19,7 @@ export interface OnlineClassRequest {
 export interface OnlineClass {
   id: number;
   title: string;
+  topic: string; // From backend response
   description: string | null;
   meetingLink: string | null;
   meetingId: string | null;
@@ -32,7 +33,9 @@ export interface OnlineClass {
   recordingUrl: string | null;
   schoolId: number;
   classRoomId: number;
+  classRoomName: string; // From backend response
   subjectId: number | null;
+  subjectName: string; // From backend response
   teacherId: number;
   createdAt: string;
   updatedAt: string | null;

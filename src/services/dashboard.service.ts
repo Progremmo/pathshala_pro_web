@@ -19,7 +19,22 @@ export interface DashboardStats {
   }[];
 }
 
+export interface TeacherDashboardStats {
+  classesToday: number;
+  pendingAttendance: number;
+  notesUploaded: number;
+  upcomingOnlineClasses: number;
+  pendingTasks: {
+    title: string;
+    type: string;
+    urgent: boolean;
+  }[];
+}
+
 export const dashboardService = {
   getStats: (schoolId: number) =>
     api.get<ApiResponse<DashboardStats>>(`/schools/${schoolId}/dashboard/stats`).then((r) => r.data),
+  
+  getTeacherStats: (schoolId: number, teacherId: number) =>
+    api.get<ApiResponse<TeacherDashboardStats>>(`/schools/${schoolId}/dashboard/teacher/${teacherId}/stats`).then((r) => r.data),
 };

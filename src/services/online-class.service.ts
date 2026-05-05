@@ -21,4 +21,7 @@ export const onlineClassService = {
 
   delete: (schoolId: number, classId: number) =>
     api.delete<ApiResponse<void>>(`/schools/${schoolId}/online-classes/${classId}`).then((r) => r.data),
+
+  getByTeacher: (schoolId: number, teacherId: number, params?: PaginationParams) =>
+    api.get<ApiResponse<PaginatedResponse<OnlineClass>>>(`/schools/${schoolId}/online-classes/teacher/${teacherId}`, { params }).then((r) => r.data),
 };

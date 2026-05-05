@@ -9,6 +9,7 @@ export const onlineClassKeys = {
   lists: (schoolId: number) => [...onlineClassKeys.all, 'list', schoolId] as const,
   list: (schoolId: number, params?: PaginationParams) => [...onlineClassKeys.lists(schoolId), params] as const,
   upcoming: (schoolId: number, days?: number) => [...onlineClassKeys.all, 'upcoming', schoolId, days] as const,
+  teacher: (schoolId: number, teacherId: number, params?: PaginationParams) => [...onlineClassKeys.all, 'teacher', schoolId, teacherId, params] as const,
 };
 
 export function useOnlineClasses(schoolId: number, params?: PaginationParams) {
@@ -16,6 +17,14 @@ export function useOnlineClasses(schoolId: number, params?: PaginationParams) {
     queryKey: onlineClassKeys.list(schoolId, params),
     queryFn: () => onlineClassService.getAll(schoolId, params),
     enabled: !!schoolId,
+  });
+}
+
+export function useTeacherOnlineClasses(schoolId: number, teacherId: number, params?: PaginationParams) {
+  return useQuery({
+    queryKey: onlineClassKeys.teacher(schoolId, teacherId, params),
+    queryFn: () => onlineClassService.getByTeacher(schoolId, teacherId, params),
+    enabled: !!schoolId && !!teacherId,
   });
 }
 

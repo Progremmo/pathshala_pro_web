@@ -10,9 +10,27 @@ interface StatCardProps {
   trend?: { value: number; label: string };
   className?: string;
   iconClassName?: string;
+  loading?: boolean;
 }
 
-export function StatCard({ title, value, subtitle, icon: Icon, trend, className, iconClassName }: StatCardProps) {
+export function StatCard({ title, value, subtitle, icon: Icon, trend, className, iconClassName, loading }: StatCardProps) {
+  if (loading) {
+    return (
+      <Card className={cn('relative overflow-hidden', className)}>
+        <CardContent className="p-6">
+          <div className="flex items-start justify-between">
+            <div className="space-y-3">
+              <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+              <div className="h-8 w-16 animate-pulse rounded bg-muted" />
+              <div className="h-3 w-32 animate-pulse rounded bg-muted" />
+            </div>
+            <div className="h-11 w-11 animate-pulse rounded-xl bg-muted" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className={cn('relative overflow-hidden transition-all duration-200 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5', className)}>
       <CardContent className="p-6">
